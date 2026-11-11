@@ -31,7 +31,7 @@ fn expand(input: TokenStream) -> Result<TokenStream, String> {
         "/// The empty test store: an in-memory store with this schema.json applied \
          and foreign keys on, holding no rows.\n\
          #[must_use]\n\
-         pub fn empty_store() -> ::rusqlite::Connection {{\n\
+         pub fn empty_store() -> ::forgr::store::Connection {{\n\
          ::forgr::store::empty_store(::core::include_str!(::core::concat!(::core::env!(\"CARGO_MANIFEST_DIR\"), \"/\", {path:?})))\n\
          }}"
     );

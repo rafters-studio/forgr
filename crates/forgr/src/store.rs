@@ -1,6 +1,7 @@
 //! The empty test store from schema.json.
 
-use rusqlite::Connection;
+/// The store's type, so generated code names it through forgr.
+pub use rusqlite::Connection;
 
 /// An in-memory store with `schema_json` applied by forgr-schema's replay and
 /// foreign keys on, holding no rows. `schema!` emits `empty_store()`, which
