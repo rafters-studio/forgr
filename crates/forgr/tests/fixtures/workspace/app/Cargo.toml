@@ -1,0 +1,10 @@
+[package]
+name = "app2"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[dependencies]
+store = { path = "../store" }
+rusqlite = { version = "0.41", features = ["bundled"] }
+[dev-dependencies]
+store = { path = "../store", features = ["testing"] }

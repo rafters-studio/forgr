@@ -36,6 +36,7 @@ struct Called {
     kind: Slot<edge::kinds::Row>,
     event: Slot<macro_toy::events::Row>,
     build: Slot<std::process::Output>,
+    owner: Slot<std::path::PathBuf>,
     notes: Slot<Vec<macro_toy::notes::Row>>,
     events: Slot<Vec<macro_toy::events::Row>>,
     styles: Slot<Vec<kessel::combat_styles::Row>>,
@@ -423,6 +424,65 @@ pub fn only_fqn() -> forgr::insert::Result<store::combat_styles::Row> {
 }
 "#;
 
+/// Writes a crate named `name` under the target's temporary directory, with
+/// forgr as a dependency with `features`, and `files` (path and text) beside
+/// its manifest and Cargo.lock; returns its directory.
+fn write_crate(
+    name: &str,
+    features: &str,
+    files: &[(&str, &str)],
+) -> Result<std::path::PathBuf, String> {
+    let root = std::path::Path::new(env!("CARGO_TARGET_TMPDIR")).join(name);
+    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut all = vec![
+        (
+            "Cargo.toml".to_owned(),
+            format!(
+                "[package]\nname = \"{name}\"\nedition = \"2024\"\n\n[workspace]\n\n\
+                 [dependencies]\nforgr = {{ path = '{}', features = [{features}] }}\n",
+                manifest.display()
+            ),
+        ),
+        (
+            "Cargo.lock".to_owned(),
+            include_str!("../../../Cargo.lock").to_owned(),
+        ),
+    ];
+    all.extend(
+        files
+            .iter()
+            .map(|(path, text)| ((*path).to_owned(), (*text).to_owned())),
+    );
+    for (path, text) in all {
+        let path = root.join(path);
+        if let Some(dir) = path.parent() {
+            std::fs::create_dir_all(dir).map_err(|err| format!("{}: {err}", dir.display()))?;
+        }
+        std::fs::write(&path, text).map_err(|err| format!("{}: {err}", path.display()))?;
+    }
+    Ok(root)
+}
+
+/// Runs cargo `args` on the crate at `root`, with its own target directory
+/// `target` under the target's temporary directory.
+fn cargo(
+    root: &std::path::Path,
+    target: &str,
+    args: &[&str],
+) -> Result<std::process::Output, String> {
+    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
+    std::process::Command::new(cargo)
+        .args(&args[..1])
+        .args(["--offline", "--color", "never", "--manifest-path"])
+        .arg(root.join("Cargo.toml"))
+        .arg("--target-dir")
+        .arg(std::path::Path::new(env!("CARGO_TARGET_TMPDIR")).join(target))
+        .args(&args[1..])
+        .env_remove("CARGO_TARGET_DIR")
+        .output()
+        .map_err(|err| format!("could not run cargo: {err}"))
+}
+
 /// Checks a crate named `name` that depends on forgr, with `features`, and
 /// holds `lib` as its src/lib.rs and `schema` as its schema.json.
 fn check_crate(
@@ -431,38 +491,12 @@ fn check_crate(
     lib: &str,
     schema: &str,
 ) -> Result<std::process::Output, String> {
-    let root = std::path::Path::new(env!("CARGO_TARGET_TMPDIR")).join(name);
-    let src = root.join("src");
-    std::fs::create_dir_all(&src).map_err(|err| format!("{}: {err}", src.display()))?;
-    let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-    let files = [
-        (
-            root.join("Cargo.toml"),
-            format!(
-                "[package]\nname = \"{name}\"\nedition = \"2024\"\n\n[workspace]\n\n\
-                 [dependencies]\nforgr = {{ path = '{}', features = [{features}] }}\n",
-                manifest.display()
-            ),
-        ),
-        (root.join("src/lib.rs"), lib.to_owned()),
-        (root.join("schema.json"), schema.to_owned()),
-        (
-            root.join("Cargo.lock"),
-            include_str!("../../../Cargo.lock").to_owned(),
-        ),
-    ];
-    for (path, text) in files {
-        std::fs::write(&path, text).map_err(|err| format!("{}: {err}", path.display()))?;
-    }
-    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
-    std::process::Command::new(cargo)
-        .args(["check", "--offline", "--color", "never", "--manifest-path"])
-        .arg(root.join("Cargo.toml"))
-        .arg("--target-dir")
-        .arg(root.join("target"))
-        .env_remove("CARGO_TARGET_DIR")
-        .output()
-        .map_err(|err| format!("could not run cargo: {err}"))
+    let root = write_crate(
+        name,
+        features,
+        &[("src/lib.rs", lib), ("schema.json", schema)],
+    )?;
+    cargo(&root, &format!("{name}/target"), &["check"])
 }
 
 #[when("the test inserts a combat_styles factory with only fqn set")]
@@ -1251,5 +1285,148 @@ fn fails_to_compile(called: &Called) -> Result<(), String> {
         Err(format!(
             "the test failed to compile, but not for notes_fts:\n{stderr}"
         ))
+    }
+}
+
+/// The counts in the SQL check's last line: failed, checked and unchecked.
+fn counts(stdout: &str) -> Option<(usize, usize, usize)> {
+    let line = stdout
+        .lines()
+        .find(|l| l.contains("checked SQL statements do not match schema.json ("))?;
+    let numbers: Vec<usize> = line
+        .split(|c: char| !c.is_ascii_digit())
+        .filter_map(|n| n.parse().ok())
+        .collect();
+    match numbers.as_slice() {
+        [failed, checked, unchecked] => Some((*failed, *checked, *unchecked)),
+        _ => None,
+    }
+}
+
+#[when("the developer runs the crate's tests")]
+fn runs_crate_tests(called: &Called) -> Result<(), String> {
+    // This test binary is the crate's tests: run the check its schema! call emitted.
+    let exe = std::env::current_exe().map_err(|err| format!("no test binary: {err}"))?;
+    let output = std::process::Command::new(exe)
+        .args([
+            "macro_toy::forgr_sql_matches_schema",
+            "--exact",
+            "--nocapture",
+        ])
+        .output()
+        .map_err(|err| format!("could not run the crate's tests: {err}"))?;
+    called.build.set(output);
+    Ok(())
+}
+
+#[then("the emitted SQL check runs and reports its checked, failed and unchecked counts")]
+fn reports_counts(called: &Called) -> Result<(), String> {
+    let output = called.build.take().ok_or("the tests were not run")?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    if !stdout.contains("test macro_toy::forgr_sql_matches_schema ... ok") {
+        return Err(format!(
+            "the emitted SQL check did not run and pass:\n{stdout}"
+        ));
+    }
+    match counts(&stdout) {
+        Some(_) => Ok(()),
+        None => Err(format!("the check reported no counts:\n{stdout}")),
+    }
+}
+
+/// The owning crate's src/lib.rs: the schema! call, over its schema.json.
+const OWNER_CALL: &str = "#[cfg(test)]
+mod store {
+    forgr::schema!(\"schema.json\");
+}
+";
+
+#[given(
+    "a crate that calls schema! over the macro toy's schema.json fixture and whose src holds the literal INSERT OR IGNORE should produce zero affected on re-run"
+)]
+fn owner_with_unparsable(called: &Called) -> Result<(), String> {
+    let lib = format!(
+        "pub const RERUN: &str = \"INSERT OR IGNORE should produce zero affected on re-run\";\n\n{OWNER_CALL}"
+    );
+    called.owner.set(write_crate(
+        "unparsable-sql",
+        "",
+        &[
+            ("src/lib.rs", &lib),
+            ("schema.json", include_str!("fixtures/macro/schema.json")),
+        ],
+    )?);
+    Ok(())
+}
+
+#[given(
+    "a crate that calls schema! over the macro toy's schema.json fixture and whose tests/ holds a query naming the column author of notes, which the fixture lacks"
+)]
+fn owner_with_tests_query(called: &Called) -> Result<(), String> {
+    let query = "#[test]
+fn author_of_notes() {
+    let query = \"SELECT author FROM notes\";
+    assert!(query.contains(\"author\"));
+}
+";
+    called.owner.set(write_crate(
+        "tests-not-checked",
+        "",
+        &[
+            ("src/lib.rs", OWNER_CALL),
+            ("tests/query.rs", query),
+            ("schema.json", include_str!("fixtures/macro/schema.json")),
+        ],
+    )?);
+    Ok(())
+}
+
+#[when("the developer runs the owning crate's tests")]
+fn runs_owner_tests(called: &Called) -> Result<(), String> {
+    let root = called.owner.take().ok_or("no crate was written")?;
+    // One target directory for these crates, so forgr's dependencies build once.
+    called.build.set(cargo(
+        &root,
+        "sql-check/target",
+        &["test", "--", "--nocapture"],
+    )?);
+    Ok(())
+}
+
+/// The output of the owning crate's tests, when they passed and its SQL check ran.
+fn passed_check(called: &Called) -> Result<String, String> {
+    let output = called.build.take().ok_or("the tests were not run")?;
+    let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("the tests failed:\n{stdout}\n{stderr}"));
+    }
+    if !stdout.contains("test store::forgr_sql_matches_schema ... ok") || counts(&stdout).is_none()
+    {
+        return Err(format!("the SQL check did not run:\n{stdout}"));
+    }
+    Ok(stdout)
+}
+
+#[then("the check lists that literal as unchecked and does not fail on it")]
+fn lists_unparsable(called: &Called) -> Result<(), String> {
+    let stdout = passed_check(called)?;
+    let listed = stdout.lines().any(|l| {
+        l.starts_with("unchecked src/lib.rs:1: does not parse")
+            && l.contains("INSERT OR IGNORE should produce zero affected on re-run")
+    });
+    if listed {
+        Ok(())
+    } else {
+        Err(format!("the literal is not listed as unchecked:\n{stdout}"))
+    }
+}
+
+#[then("the check does not fail on that query")]
+fn tests_not_checked(called: &Called) -> Result<(), String> {
+    let stdout = passed_check(called)?;
+    match counts(&stdout) {
+        Some((0, _, _)) if !stdout.contains("SELECT author") => Ok(()),
+        _ => Err(format!("the check read the query in tests/:\n{stdout}")),
     }
 }

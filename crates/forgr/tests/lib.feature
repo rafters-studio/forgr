@@ -84,3 +84,9 @@ Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORG
     Given the macro toy's schema.json fixture, which holds the FTS5 table notes_fts, and forgr's fake feature on
     When a test calls notes_fts::mock(8)
     Then the test fails to compile
+
+  @criterion-01a1c96f-deab-7fc2-bbe4-84d31c107a34
+  Scenario: the SQL check needs no database file
+    Given a crate that calls schema! over the macro toy's schema.json fixture and has no database file
+    When the developer runs the crate's tests
+    Then the emitted SQL check runs and reports its checked, failed and unchecked counts

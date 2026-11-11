@@ -351,10 +351,13 @@ dependencies = [
  "forgr",
  "forgr-macros",
  "forgr-schema",
+ "proc-macro2",
  "rstest",
  "rstest-bdd",
  "rstest-bdd-macros",
  "rusqlite",
+ "serde_json",
+ "syn 3.0.10",
 ]
 
 [[package]]

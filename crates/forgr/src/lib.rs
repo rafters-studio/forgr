@@ -44,7 +44,21 @@
 /// ```text
 /// error[E0277]: mocks need forgr's `fake` feature
 /// ```
+///
+/// `schema!` also emits `forgr_sql_matches_schema`, a test of the crate that
+/// calls it: forgr's SQL check reads the members of the workspace from its
+/// manifest, takes the string literals in each member's non-test `src/`
+/// (`#[cfg(test)]` code and `tests/` are not scanned) and each statement of its
+/// .sql files, and prepares them against schema.json in memory. A statement
+/// naming what the schema lacks fails the test with its file and line; the
+/// report counts checked, failed and unchecked apart. SQL built with `format!`
+/// is not supported in 0.1: it is listed as unchecked. DDL (CREATE, ALTER,
+/// DROP) and SQL-looking text that does not parse are listed as unchecked,
+/// never failed.
 pub use forgr_macros::schema;
+
+#[doc(hidden)]
+pub mod check;
 
 #[cfg(feature = "fake")]
 #[doc(hidden)]
