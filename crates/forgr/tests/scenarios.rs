@@ -39,6 +39,8 @@ struct Called {
     notes: Slot<Vec<macro_toy::notes::Row>>,
     events: Slot<Vec<macro_toy::events::Row>>,
     styles: Slot<Vec<kessel::combat_styles::Row>>,
+    node: Slot<edge::nodes::Row>,
+    nodes: Slot<Vec<edge::nodes::Row>>,
 }
 
 #[fixture]
@@ -846,6 +848,243 @@ fn eight_tags_no_violations(called: &Called) -> Result<(), String> {
     } else {
         Err(format!(
             "the store holds {tags} tags rows and {violations} foreign-key violations"
+        ))
+    }
+}
+
+#[when("the test inserts events::mock(3..32)")]
+fn mock_ranged_events(called: &Called) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    macro_toy::events::mock(3..32)
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.store.set(store);
+    Ok(())
+}
+
+#[then("the store holds at least 3 and at most 31 events rows")]
+fn holds_ranged_events(called: &Called) -> Result<(), String> {
+    match count(called, "SELECT count(*) FROM events")? {
+        3..=31 => Ok(()),
+        n => Err(format!("the store holds {n} events rows")),
+    }
+}
+
+#[when("the test inserts combat_styles::mock(8) with attack_type Fixed to force")]
+fn mock_styles_fixed(called: &Called) -> Result<(), String> {
+    use kessel::Override::Fixed;
+    let store = called.store.take().ok_or("no store was taken")?;
+    kessel::combat_styles::mock(8)
+        .with(kessel::combat_styles::Overrides {
+            attack_type: Fixed("force".into()),
+            ..Default::default()
+        })
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.store.set(store);
+    Ok(())
+}
+
+#[then("every combat_styles row has attack_type force")]
+fn styles_all_force(called: &Called) -> Result<(), String> {
+    let held = count(called, "SELECT count(*) FROM combat_styles")?;
+    let force = count(
+        called,
+        "SELECT count(*) FROM combat_styles WHERE attack_type = 'force'",
+    )?;
+    if held == 8 && force == 8 {
+        Ok(())
+    } else {
+        Err(format!(
+            "{force} of {held} combat_styles rows have attack_type force"
+        ))
+    }
+}
+
+/// Inserts `events::mock(12)` with `overrides` into the scenario's store.
+fn mock_events_with(
+    called: &Called,
+    overrides: macro_toy::events::Overrides,
+) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    let rows = macro_toy::events::mock(12)
+        .with(overrides)
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.events.set(rows);
+    called.store.set(store);
+    Ok(())
+}
+
+#[when("the test inserts events::mock(12) with status Pick from -1, 0, 1 and 2")]
+fn mock_events_picked(called: &Called) -> Result<(), String> {
+    use macro_toy::Override::Pick;
+    mock_events_with(
+        called,
+        macro_toy::events::Overrides {
+            status: Pick(vec![-1, 0, 1, 2]),
+            ..Default::default()
+        },
+    )
+}
+
+#[then("every events row has a status of -1, 0, 1 or 2")]
+fn statuses_picked(called: &Called) -> Result<(), String> {
+    let rows = called.events.take().ok_or("no mock was inserted")?;
+    let held = count(called, "SELECT count(*) FROM events")?;
+    let listed = count(
+        called,
+        "SELECT count(*) FROM events WHERE status IN (-1, 0, 1, 2)",
+    )?;
+    if rows.len() == 12 && held == 12 && listed == 12 {
+        Ok(())
+    } else {
+        Err(format!(
+            "{listed} of {held} events rows have a listed status"
+        ))
+    }
+}
+
+#[when("the test inserts events::mock(12) with body made per row as kid and the row's number")]
+fn mock_events_per_row(called: &Called) -> Result<(), String> {
+    use macro_toy::Override;
+    mock_events_with(
+        called,
+        macro_toy::events::Overrides {
+            body: Override::each(|r| format!("kid {}", r.row)),
+            ..Default::default()
+        },
+    )
+}
+
+#[then("each events row's body is kid and that row's number")]
+fn bodies_per_row(called: &Called) -> Result<(), String> {
+    let rows = called.events.take().ok_or("no mock was inserted")?;
+    let store = called.store.take().ok_or("no store was taken")?;
+    let held: Vec<String> = store
+        .prepare("SELECT body FROM events ORDER BY rowid")
+        .and_then(|mut stmt| stmt.query_map([], |r| r.get(0))?.collect())
+        .map_err(|err| err.to_string())?;
+    let want: Vec<String> = (0..12).map(|n| format!("kid {n}")).collect();
+    let returned: Vec<String> = rows.iter().map(|r| r.body.clone()).collect();
+    // events.id is a random rowid, so the store's order is by id; compare as sets there.
+    let mut sorted = held.clone();
+    sorted.sort();
+    let mut sorted_want = want.clone();
+    sorted_want.sort();
+    if returned == want && sorted == sorted_want {
+        Ok(())
+    } else {
+        Err(format!(
+            "insert returned {returned:?}; the store holds {held:?}"
+        ))
+    }
+}
+
+#[given(
+    "the empty test store for the macro toy's schema.json fixture, holding an events row inserted by a factory with id 1, ty 3, status 0 and body root"
+)]
+fn store_with_root_event(called: &Called) -> Result<(), String> {
+    let store = macro_toy::empty_store();
+    let root = macro_toy::events::factory()
+        .id(1)
+        .ty(3)
+        .status(0)
+        .body("root")
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.event.set(root);
+    called.store.set(store);
+    Ok(())
+}
+
+#[when("the test inserts events::mock(12) with source Fixed to 1")]
+fn mock_events_to_root(called: &Called) -> Result<(), String> {
+    use macro_toy::Override::Fixed;
+    mock_events_with(
+        called,
+        macro_toy::events::Overrides {
+            source: Fixed(Some(1)),
+            ..Default::default()
+        },
+    )
+}
+
+#[then("every new events row's source is 1")]
+fn sources_root(called: &Called) -> Result<(), String> {
+    let root = called.event.take().ok_or("no events row was inserted")?;
+    let rows = called.events.take().ok_or("no mock was inserted")?;
+    let new = count(called, "SELECT count(*) FROM events WHERE id <> 1")?;
+    let attached = count(
+        called,
+        "SELECT count(*) FROM events WHERE id <> 1 AND source = 1",
+    )?;
+    let sources: Vec<Option<i64>> = rows.iter().map(|r| r.source).collect();
+    if root.id == 1
+        && rows.len() == 12
+        && sources.iter().all(|s| *s == Some(1))
+        && new == 12
+        && attached == 12
+    {
+        Ok(())
+    } else {
+        Err(format!(
+            "{attached} of {new} new events rows have source 1; insert returned {sources:?}"
+        ))
+    }
+}
+
+#[given(
+    "the empty test store for the edge schema.json fixture, holding one nodes row inserted by a factory whose parent_id is its own id"
+)]
+fn store_with_root_node(called: &Called) -> Result<(), String> {
+    let store = edge::empty_store();
+    let root = edge::nodes::factory()
+        .id("root")
+        .parent_id("root")
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    if root.parent_id != root.id {
+        return Err(format!("the nodes row is {root:?}"));
+    }
+    called.node.set(root);
+    called.store.set(store);
+    Ok(())
+}
+
+#[when("the test inserts nodes::mock(8) with parent_id Fixed to that row's id")]
+fn mock_nodes_to_root(called: &Called) -> Result<(), String> {
+    use edge::Override::Fixed;
+    let root = called.node.take().ok_or("no nodes row was inserted")?;
+    let store = called.store.take().ok_or("no store was taken")?;
+    let rows = edge::nodes::mock(8)
+        .with(edge::nodes::Overrides {
+            parent_id: Fixed(root.id.clone()),
+            ..Default::default()
+        })
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.nodes.set(rows);
+    called.node.set(root);
+    called.store.set(store);
+    Ok(())
+}
+
+#[then("every new nodes row's parent_id is that row's id")]
+fn parents_root(called: &Called) -> Result<(), String> {
+    let root = called.node.take().ok_or("no nodes row was inserted")?;
+    let rows = called.nodes.take().ok_or("no mock was inserted")?;
+    let new = count(called, "SELECT count(*) FROM nodes WHERE id <> 'root'")?;
+    let attached = count(
+        called,
+        "SELECT count(*) FROM nodes WHERE id <> 'root' AND parent_id = 'root'",
+    )?;
+    if rows.len() == 8 && rows.iter().all(|r| r.parent_id == root.id) && new == 8 && attached == 8 {
+        Ok(())
+    } else {
+        Err(format!(
+            "{attached} of {new} new nodes rows have parent_id {}",
+            root.id
         ))
     }
 }

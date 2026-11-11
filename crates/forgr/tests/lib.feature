@@ -54,3 +54,15 @@ Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORG
     Given the empty test store for the macro toy's schema.json fixture, where note_tags has the required composite foreign key (owner, name) to tags
     When the test inserts note_tags::mock(8)
     Then the store holds 8 tags rows and no foreign-key violations
+
+  @criterion-01a1c93d-9750-70f0-959d-b4594d9ef0c6
+  Scenario: a mock attaches its rows to one parent
+    Given the empty test store for the macro toy's schema.json fixture, holding an events row inserted by a factory with id 1, ty 3, status 0 and body root
+    When the test inserts events::mock(12) with source Fixed to 1
+    Then every new events row's source is 1
+
+  @criterion-01a1c950-1faa-7a53-a1ae-33fbf772728e
+  Scenario: a required self-reference is set with Fixed
+    Given the empty test store for the edge schema.json fixture, holding one nodes row inserted by a factory whose parent_id is its own id
+    When the test inserts nodes::mock(8) with parent_id Fixed to that row's id
+    Then every new nodes row's parent_id is that row's id

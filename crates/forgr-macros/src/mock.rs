@@ -6,10 +6,12 @@ use std::fmt::Write as _;
 use forgr_schema::{Column, ForeignKey, Table};
 
 use crate::ident::ident;
-use crate::table::{Affinity, affinity, in_key};
+use crate::table::{Affinity, affinity, in_key, row_type};
 
-/// With fake, `mock(n)`, `Mock` and its `insert`, which builds a fresh parent
-/// per row for each required foreign key; without, the stand-in `mock`.
+/// With fake, `mock(n | a..b)`, `Mock` with its `with` and `insert`, which
+/// builds a fresh parent per row for each required foreign key the test leaves
+/// Fake and then applies the overrides, and `Overrides`; without, the stand-in
+/// `mock`.
 /// Decided here at expansion by forgr-macros' own fake feature, which forgr's
 /// forwards to: a cfg in the generated code would read the calling crate's
 /// features instead (macro toy M6).
@@ -25,29 +27,64 @@ pub(crate) fn emit(out: &mut String, table: &Table, tables: &[Table]) {
     }
     let _ = write!(
         out,
-        "/// `n` rows of `{name}` filled by fake.\n\
-         pub fn mock(n: usize) -> Mock {{\n\
-         Mock {{ n }}\n\
+        "/// `n` rows of `{name}` filled by fake, or a random number in a Rust \
+         range: `3..32` is 3 to 31, `3..=32` is 3 to 32.\n\
+         pub fn mock(n: impl ::core::convert::Into<::forgr::fake::Count>) -> Mock {{\n\
+         Mock {{ n: n.into(), overrides: Overrides::default() }}\n\
          }}\n\
          /// Rows of `{name}` filled by fake, not yet written.\n\
          #[must_use]\n\
          pub struct Mock {{\n\
-         n: usize,\n\
+         n: ::forgr::fake::Count,\n\
+         overrides: Overrides,\n\
          }}\n\
          impl Mock {{\n\
+         /// The mock with these overrides; every column they leave Fake is fake's.\n\
+         pub fn with(self, overrides: Overrides) -> Self {{\n\
+         Self {{ overrides, ..self }}\n\
+         }}\n\
          /// Writes the rows and returns them as written, keys included.\n\
          ///\n\
          /// # Errors\n\
          ///\n\
          /// When the store refuses a row.\n\
          pub fn insert(self, store: &::forgr::store::Connection) -> ::forgr::insert::Result<::std::vec::Vec<Row>> {{\n\
-         ::forgr::fake::insert(store, {name:?}, COLUMNS, FILL, self.n, {parents})\n\
-         }}\n\
-         }}\n\
-         const FILL: &[::forgr::fake::Column] = &[",
+         let Self {{ n, mut overrides }} = self;\n\
+         ::forgr::fake::insert(store, {name:?}, COLUMNS, FILL, n, |r, mut set| {{\n\
+         {parents}",
         name = table.name,
         parents = parents(table, tables),
     );
+    for column in &table.columns {
+        let _ = write!(
+            out,
+            "if let ::core::option::Option::Some(value) = overrides.{}.value(r) {{\n\
+             set = ::forgr::insert::put(set, {:?}, ::forgr::value::Value::from(value));\n\
+             }}",
+            ident(&column.name),
+            column.name,
+        );
+    }
+    out.push_str(
+        "::core::result::Result::Ok(set)\n\
+         })\n\
+         }\n\
+         }\n\
+         /// What the mock writes to each column, one field per column: Fake by \
+         default, Fixed, Pick or Each; `..Default::default()` leaves the rest Fake.\n\
+         #[derive(Default)]\n\
+         pub struct Overrides {",
+    );
+    for column in &table.columns {
+        let _ = write!(
+            out,
+            "/// What the mock writes to `{}`.\npub {}: ::forgr::fake::Override<{}>,",
+            column.name,
+            ident(&column.name),
+            row_type(table, column)
+        );
+    }
+    out.push_str("}\nconst FILL: &[::forgr::fake::Column] = &[");
     for column in &table.columns {
         let _ = write!(
             out,
@@ -59,10 +96,10 @@ pub(crate) fn emit(out: &mut String, table: &Table, tables: &[Table]) {
     out.push_str("];");
 }
 
-/// The per-row hook of a mock's insert: for each required foreign key to
-/// another table, one fresh parent mocked and the key set from its referenced
-/// columns. A foreign key to the table's own table gets no parent: the test
-/// sets it with Fixed.
+/// The parents part of a mock's per-row hook: for each required foreign key to
+/// another table whose columns the test leaves Fake, one fresh parent mocked
+/// and the key set from its referenced columns. A foreign key to the table's
+/// own table gets no parent: the test sets it with Fixed.
 fn parents(table: &Table, tables: &[Table]) -> String {
     let mut body = String::new();
     for fk in &table.foreign_keys {
@@ -84,9 +121,19 @@ fn parents(table: &Table, tables: &[Table]) -> String {
         {
             continue;
         }
+        let fake = pairs
+            .iter()
+            .map(|(child, _)| {
+                format!(
+                    "::core::matches!(overrides.{}, ::forgr::fake::Override::Fake)",
+                    ident(&child.name)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" && ");
         let _ = write!(
             body,
-            "for parent in super::{}::mock(1).insert(store)? {{",
+            "if {fake} {{ for parent in super::{}::mock(1).insert(store)? {{",
             parent.name
         );
         for (child, referenced) in pairs {
@@ -97,13 +144,9 @@ fn parents(table: &Table, tables: &[Table]) -> String {
                 ident(&referenced.name)
             );
         }
-        body.push('}');
+        body.push_str("} }");
     }
-    if body.is_empty() {
-        "::core::result::Result::Ok".to_owned()
-    } else {
-        format!("|mut set| {{ {body} ::core::result::Result::Ok(set) }}")
-    }
+    body
 }
 
 /// Each column of `fk` in `table` and the column of `parent` it references, a
