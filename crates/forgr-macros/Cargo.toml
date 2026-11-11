@@ -8,3 +8,7 @@ proc-macro = true
 
 [dependencies]
 forgr-schema = { path = "../forgr-schema" }
+
+[features]
+# Emit each table's mock; without it, a stand-in whose error names the feature.
+fake = []
