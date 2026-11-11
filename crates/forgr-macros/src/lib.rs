@@ -5,9 +5,10 @@ use std::fmt::Write as _;
 use proc_macro::{TokenStream, TokenTree};
 
 /// `schema!("<path>/schema.json")`, the path relative to the calling crate's
-/// manifest directory: one module per table of the schema.json, which is read
-/// at expansion by forgr-schema and tracked with `include_str!`, so an edit to
-/// the file alone expands the call again.
+/// manifest directory: one module per table of the schema.json and
+/// `empty_store()`, the empty test store. The file is read at expansion by
+/// forgr-schema and tracked by the `include_str!` `empty_store()` replays, so an
+/// edit to the file alone expands the call again.
 #[proc_macro]
 pub fn schema(input: TokenStream) -> TokenStream {
     expand(input).unwrap_or_else(|message| {
@@ -27,7 +28,12 @@ fn expand(input: TokenStream) -> Result<TokenStream, String> {
     let schema = forgr_schema::Schema::read(&text).map_err(|err| format!("{path}: {err}"))?;
 
     let mut out = format!(
-        "const _: &str = ::core::include_str!(::core::concat!(::core::env!(\"CARGO_MANIFEST_DIR\"), \"/\", {path:?}));"
+        "/// The empty test store: an in-memory store with this schema.json applied \
+         and foreign keys on, holding no rows.\n\
+         #[must_use]\n\
+         pub fn empty_store() -> ::rusqlite::Connection {{\n\
+         ::forgr::store::empty_store(::core::include_str!(::core::concat!(::core::env!(\"CARGO_MANIFEST_DIR\"), \"/\", {path:?})))\n\
+         }}"
     );
     for table in &schema.tables {
         let _ = write!(out, "pub mod {} {{}}", table.name);
