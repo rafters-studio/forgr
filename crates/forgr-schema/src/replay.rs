@@ -6,11 +6,11 @@ use rusqlite::Connection;
 use crate::Error;
 use crate::file::Object;
 
-/// The replayed store and the names of its tables that are neither virtual
+/// The replayed store and the entries of its tables that are neither virtual
 /// tables nor their shadow tables, in file order.
-pub(crate) struct Replay {
+pub(crate) struct Replay<'a> {
     pub conn: Connection,
-    pub tables: Vec<String>,
+    pub tables: Vec<&'a Object>,
 }
 
 fn is_virtual(object: &Object) -> bool {
@@ -25,7 +25,7 @@ fn is_virtual(object: &Object) -> bool {
 /// Replays `objects` into a fresh in-memory SQLite: every table before every
 /// other object, otherwise in file order. A table named `<virtual table>_*` is a
 /// shadow table SQLite recreates with its virtual table, so its entry is skipped.
-pub(crate) fn replay(objects: &[Object]) -> Result<Replay, Error> {
+pub(crate) fn replay(objects: &[Object]) -> Result<Replay<'_>, Error> {
     let virtuals: Vec<&str> = objects
         .iter()
         .filter(|o| is_virtual(o))
@@ -56,7 +56,6 @@ pub(crate) fn replay(objects: &[Object]) -> Result<Replay, Error> {
     let tables = objects
         .iter()
         .filter(|o| o.kind == "table" && !is_virtual(o) && !is_shadow(o))
-        .map(|o| o.name.clone())
         .collect();
     Ok(Replay { conn, tables })
 }
@@ -135,7 +134,8 @@ mod tests {
     fn p5_replay_matches_the_source() {
         let source = Connection::open_in_memory().unwrap();
         source.execute_batch(DDL).unwrap();
-        let replay = replay(&parse(WRITER).unwrap().objects).unwrap();
+        let objects = parse(WRITER).unwrap().objects;
+        let replay = replay(&objects).unwrap();
         let (a, b) = (shape(&source), shape(&replay.conn));
         println!(
             "P5 shape rows source={} replay={} identical={}",
@@ -198,6 +198,11 @@ mod tests {
             .unwrap();
         println!("P3 forgr-schema replay: ok, notes_fts and its shadow tables: {recreated}");
         assert_eq!(recreated, 5);
-        assert!(!replay.tables.iter().any(|t| t.starts_with("notes_fts")));
+        assert!(
+            !replay
+                .tables
+                .iter()
+                .any(|t| t.name.starts_with("notes_fts"))
+        );
     }
 }

@@ -6,6 +6,8 @@
 //! `CHECK (col IN (...))` list from the CREATE TABLE text. It never writes the
 //! file and never opens a database file.
 
+use std::fmt;
+
 mod check_list;
 mod file;
 mod model;
@@ -14,25 +16,47 @@ mod replay;
 pub use model::{Column, ForeignKey, PrimaryKey, Table};
 
 /// Why a schema.json could not be read.
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug)]
 pub enum Error {
-    #[error("schema.json is not in migratr's format: {0}")]
-    Parse(#[from] serde_json::Error),
-    #[error("could not open an in-memory SQLite: {0}")]
-    Open(#[source] rusqlite::Error),
-    #[error("replaying {kind} {name} failed: {source}")]
+    /// The text is not in migratr's format; the message says where.
+    Parse(String),
+    /// No in-memory SQLite could be opened.
+    Open(rusqlite::Error),
+    /// An object's SQL did not replay.
     Replay {
         kind: String,
         name: String,
-        #[source]
         source: rusqlite::Error,
     },
-    #[error("reading table {table} failed: {source}")]
+    /// A replayed table could not be read back.
     Read {
         table: String,
-        #[source]
         source: rusqlite::Error,
     },
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Parse(message) => write!(f, "schema.json is not in migratr's format: {message}"),
+            Self::Open(source) => write!(f, "could not open an in-memory SQLite: {source}"),
+            Self::Replay { kind, name, source } => {
+                write!(f, "replaying {kind} {name} failed: {source}")
+            }
+            Self::Read { table, source } => write!(f, "reading table {table} failed: {source}"),
+        }
+    }
+}
+
+impl std::error::Error for Error {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            Self::Parse(_) => None,
+            Self::Open(source) | Self::Replay { source, .. } | Self::Read { source, .. } => {
+                Some(source)
+            }
+        }
+    }
 }
 
 /// The schema a schema.json describes.
@@ -50,20 +74,17 @@ impl Schema {
     /// When the text is not in migratr's format, or an object's SQL does not
     /// replay, or a replayed table cannot be read back.
     pub fn read(text: &str) -> Result<Self, Error> {
-        let file = file::parse(text)?;
+        let file = file::parse(text).map_err(Error::Parse)?;
         let replay = replay::replay(&file.objects)?;
         let tables = replay
             .tables
             .iter()
-            .map(|name| {
-                let sql = file
-                    .objects
-                    .iter()
-                    .find(|o| o.kind == "table" && &o.name == name)
-                    .map_or("", |o| o.sql.as_str());
-                model::read_table(&replay.conn, name, sql).map_err(|source| Error::Read {
-                    table: name.clone(),
-                    source,
+            .map(|table| {
+                model::read_table(&replay.conn, &table.name, &table.sql).map_err(|source| {
+                    Error::Read {
+                        table: table.name.clone(),
+                        source,
+                    }
                 })
             })
             .collect::<Result<_, _>>()?;
