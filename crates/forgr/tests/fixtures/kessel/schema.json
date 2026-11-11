@@ -1,0 +1,1090 @@
+{
+  "objects": [
+    {
+      "name": "idx_ability_action_params_name",
+      "sql": "CREATE INDEX idx_ability_action_params_name\n                ON ability_action_params(effparam_name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_damage_params_cc",
+      "sql": "CREATE INDEX idx_ability_damage_params_cc\n                ON ability_damage_params(cc_id_hex)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_desc_tokens_type",
+      "sql": "CREATE INDEX idx_ability_desc_tokens_type\n                ON ability_desc_tokens(token_type)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_effect_blocks_block",
+      "sql": "CREATE INDEX idx_ability_effect_blocks_block\n                ON ability_effect_blocks(block_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_effect_blocks_guid",
+      "sql": "CREATE INDEX idx_ability_effect_blocks_guid\n                ON ability_effect_blocks(block_guid)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_effect_params_flag",
+      "sql": "CREATE INDEX idx_ability_effect_params_flag\n                ON ability_effect_params(param_flag)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_effects_kind",
+      "sql": "CREATE INDEX idx_ability_effects_kind ON ability_effects(kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_effects_member",
+      "sql": "CREATE INDEX idx_ability_effects_member ON ability_effects(enum_member)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_tags_game_id",
+      "sql": "CREATE INDEX idx_ability_tags_game_id ON ability_tags(ability_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_ability_tags_tag",
+      "sql": "CREATE INDEX idx_ability_tags_tag ON ability_tags(tag_hash)",
+      "type": "index"
+    },
+    {
+      "name": "idx_achievement_refs_kind",
+      "sql": "CREATE INDEX idx_achievement_refs_kind ON achievement_refs(ref_kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_achievement_refs_ref",
+      "sql": "CREATE INDEX idx_achievement_refs_ref ON achievement_refs(ref_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_armor_classes_name",
+      "sql": "CREATE INDEX idx_armor_classes_name ON armor_classes(name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_class_utility_talents_style",
+      "sql": "CREATE INDEX idx_class_utility_talents_style\n                ON class_utility_talents(combat_style_codename)",
+      "type": "index"
+    },
+    {
+      "name": "idx_class_utility_talents_talent",
+      "sql": "CREATE INDEX idx_class_utility_talents_talent\n                ON class_utility_talents(talent_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_ach_ach",
+      "sql": "CREATE INDEX idx_cnv_ach_ach ON conversation_achievements(achievement_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_align_kind",
+      "sql": "CREATE INDEX idx_cnv_align_kind ON conversation_alignment_events(event_kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_cdx_cdx",
+      "sql": "CREATE INDEX idx_cnv_cdx_cdx ON conversation_codex(codex_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_dialogue_line",
+      "sql": "CREATE INDEX idx_cnv_dialogue_line ON conversation_dialogue(line_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_dialogue_speaker",
+      "sql": "CREATE INDEX idx_cnv_dialogue_speaker ON conversation_dialogue(speaker_npc_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_enc_enc",
+      "sql": "CREATE INDEX idx_cnv_enc_enc ON conversation_encounters(encounter_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_follow_target",
+      "sql": "CREATE INDEX idx_cnv_follow_target ON conversation_followups(target_cnv_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_items_item",
+      "sql": "CREATE INDEX idx_cnv_items_item ON conversation_items(item_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_npcs_npc",
+      "sql": "CREATE INDEX idx_cnv_npcs_npc ON conversation_npcs(npc_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_cnv_quest_refs_quest",
+      "sql": "CREATE INDEX idx_cnv_quest_refs_quest ON conversation_quest_refs(quest_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_combat_style_shared_abilities_abl",
+      "sql": "CREATE INDEX idx_combat_style_shared_abilities_abl\n                ON combat_style_shared_abilities(ability_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_combat_style_shared_abilities_style",
+      "sql": "CREATE INDEX idx_combat_style_shared_abilities_style\n                ON combat_style_shared_abilities(combat_style_codename)",
+      "type": "index"
+    },
+    {
+      "name": "idx_combat_styles_attack",
+      "sql": "CREATE INDEX idx_combat_styles_attack ON combat_styles(attack_type)",
+      "type": "index"
+    },
+    {
+      "name": "idx_combat_styles_display",
+      "sql": "CREATE INDEX idx_combat_styles_display ON combat_styles(display_segment)",
+      "type": "index"
+    },
+    {
+      "name": "idx_combat_styles_faction",
+      "sql": "CREATE INDEX idx_combat_styles_faction ON combat_styles(faction)",
+      "type": "index"
+    },
+    {
+      "name": "idx_companions_category",
+      "sql": "CREATE INDEX idx_companions_category ON companions(category)",
+      "type": "index"
+    },
+    {
+      "name": "idx_companions_name",
+      "sql": "CREATE INDEX idx_companions_name ON companions(name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_conquest_events_name",
+      "sql": "CREATE INDEX idx_conquest_events_name ON conquest_events(event_name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_conquest_events_planet",
+      "sql": "CREATE INDEX idx_conquest_events_planet ON conquest_events(planet_code)",
+      "type": "index"
+    },
+    {
+      "name": "idx_conquest_objectives_cadence",
+      "sql": "CREATE INDEX idx_conquest_objectives_cadence ON conquest_objectives(cadence)",
+      "type": "index"
+    },
+    {
+      "name": "idx_conquest_objectives_category",
+      "sql": "CREATE INDEX idx_conquest_objectives_category ON conquest_objectives(category)",
+      "type": "index"
+    },
+    {
+      "name": "idx_conquest_objectives_subcategory",
+      "sql": "CREATE INDEX idx_conquest_objectives_subcategory ON conquest_objectives(subcategory)",
+      "type": "index"
+    },
+    {
+      "name": "idx_conquest_schedule_event",
+      "sql": "CREATE INDEX idx_conquest_schedule_event\n                ON conquest_schedule(event_ordinal)",
+      "type": "index"
+    },
+    {
+      "name": "idx_conversation_options_cnv",
+      "sql": "CREATE INDEX idx_conversation_options_cnv\n                ON conversation_options(cnv_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_description_values_fqn",
+      "sql": "CREATE INDEX idx_description_values_fqn ON description_values(fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_description_values_kind",
+      "sql": "CREATE INDEX idx_description_values_kind ON description_values(kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_discipline_abilities_abl",
+      "sql": "CREATE INDEX idx_discipline_abilities_abl  ON discipline_abilities(ability_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_discipline_abilities_disc",
+      "sql": "CREATE INDEX idx_discipline_abilities_disc ON discipline_abilities(discipline_fqn_prefix)",
+      "type": "index"
+    },
+    {
+      "name": "idx_discipline_mods_target",
+      "sql": "CREATE INDEX idx_discipline_mods_target ON discipline_mods(target_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_discipline_mods_tier",
+      "sql": "CREATE INDEX idx_discipline_mods_tier ON discipline_mods(discipline_fqn_prefix, tier_ordinal)",
+      "type": "index"
+    },
+    {
+      "name": "idx_discipline_talents_disc",
+      "sql": "CREATE INDEX idx_discipline_talents_disc ON discipline_talents(discipline_fqn_prefix)",
+      "type": "index"
+    },
+    {
+      "name": "idx_discipline_talents_tal",
+      "sql": "CREATE INDEX idx_discipline_talents_tal  ON discipline_talents(talent_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_disciplines_combat_style",
+      "sql": "CREATE INDEX idx_disciplines_combat_style ON disciplines(combat_style_codename)",
+      "type": "index"
+    },
+    {
+      "name": "idx_disciplines_origin",
+      "sql": "CREATE INDEX idx_disciplines_origin ON disciplines(origin_codename)",
+      "type": "index"
+    },
+    {
+      "name": "idx_gsf_ability_stats_label",
+      "sql": "CREATE INDEX idx_gsf_ability_stats_label\n                ON gsf_ability_stats(label)",
+      "type": "index"
+    },
+    {
+      "name": "idx_gsf_crew_name",
+      "sql": "CREATE INDEX idx_gsf_crew_name ON gsf_crew(crew_name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_gsf_req_costs_kind",
+      "sql": "CREATE INDEX idx_gsf_req_costs_kind ON gsf_requisition_costs(component_kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_gsf_req_costs_target",
+      "sql": "CREATE INDEX idx_gsf_req_costs_target ON gsf_requisition_costs(target_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_gsf_talent_stats_label",
+      "sql": "CREATE INDEX idx_gsf_talent_stats_label\n                ON gsf_talent_stats(label)",
+      "type": "index"
+    },
+    {
+      "name": "idx_hydra_refs_hyd",
+      "sql": "CREATE INDEX idx_hydra_refs_hyd  ON hydra_refs(hyd_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_hydra_refs_kind",
+      "sql": "CREATE INDEX idx_hydra_refs_kind ON hydra_refs(ref_kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_hydra_refs_ref",
+      "sql": "CREATE INDEX idx_hydra_refs_ref  ON hydra_refs(ref_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_details_crew_skill",
+      "sql": "CREATE INDEX idx_item_details_crew_skill ON item_details(crew_skill)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_details_kind",
+      "sql": "CREATE INDEX idx_item_details_kind ON item_details(item_kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_details_rarity",
+      "sql": "CREATE INDEX idx_item_details_rarity ON item_details(rarity)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_details_slot",
+      "sql": "CREATE INDEX idx_item_details_slot ON item_details(slot)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_details_source",
+      "sql": "CREATE INDEX idx_item_details_source ON item_details(source)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_granted_abilities_guid",
+      "sql": "CREATE INDEX idx_item_granted_abilities_guid\n                ON item_granted_abilities(ability_guid)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_set_members_set",
+      "sql": "CREATE INDEX idx_item_set_members_set ON item_set_members(set_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_sets_source",
+      "sql": "CREATE INDEX idx_item_sets_source ON item_sets(source)",
+      "type": "index"
+    },
+    {
+      "name": "idx_item_stats_rating",
+      "sql": "CREATE INDEX idx_item_stats_rating ON item_stats(rating)",
+      "type": "index"
+    },
+    {
+      "name": "idx_mission_npcs_npc",
+      "sql": "CREATE INDEX idx_mission_npcs_npc ON mission_npcs(npc_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_mission_rewards_variable",
+      "sql": "CREATE INDEX idx_mission_rewards_variable ON mission_rewards(reward_variable)",
+      "type": "index"
+    },
+    {
+      "name": "idx_missions_source",
+      "sql": "CREATE INDEX idx_missions_source ON missions(source)",
+      "type": "index"
+    },
+    {
+      "name": "idx_object_cc_refs_id",
+      "sql": "CREATE INDEX idx_object_cc_refs_id ON object_cc_refs(cc_id_hex)",
+      "type": "index"
+    },
+    {
+      "name": "idx_object_cc_refs_name",
+      "sql": "CREATE INDEX idx_object_cc_refs_name ON object_cc_refs(cc_known_name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_object_string_refs_sid",
+      "sql": "CREATE INDEX idx_object_string_refs_sid ON object_string_refs(string_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_for_export",
+      "sql": "CREATE INDEX idx_objects_for_export ON objects(for_export)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_fqn",
+      "sql": "CREATE INDEX idx_objects_fqn ON objects(fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_guid",
+      "sql": "CREATE INDEX idx_objects_guid ON objects(guid)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_icon_name",
+      "sql": "CREATE INDEX idx_objects_icon_name ON objects(icon_name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_is_canonical",
+      "sql": "CREATE INDEX idx_objects_is_canonical ON objects(is_canonical)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_kind",
+      "sql": "CREATE INDEX idx_objects_kind ON objects(kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_payload_hash",
+      "sql": "CREATE INDEX idx_objects_payload_hash ON objects(payload_hash)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_stable_id",
+      "sql": "CREATE INDEX idx_objects_stable_id ON objects(stable_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_string_id",
+      "sql": "CREATE INDEX idx_objects_string_id ON objects(string_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_objects_template_guid",
+      "sql": "CREATE INDEX idx_objects_template_guid ON objects(template_guid)",
+      "type": "index"
+    },
+    {
+      "name": "idx_origins_attack",
+      "sql": "CREATE INDEX idx_origins_attack ON origins(attack_type)",
+      "type": "index"
+    },
+    {
+      "name": "idx_qof_category",
+      "sql": "CREATE INDEX idx_qof_category ON quest_objective_flags(flag_category)",
+      "type": "index"
+    },
+    {
+      "name": "idx_qof_flag",
+      "sql": "CREATE INDEX idx_qof_flag ON quest_objective_flags(flag_name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_qof_quest",
+      "sql": "CREATE INDEX idx_qof_quest ON quest_objective_flags(quest_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_clusters_id",
+      "sql": "CREATE INDEX idx_quest_clusters_id ON quest_clusters(cluster_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_clusters_kind",
+      "sql": "CREATE INDEX idx_quest_clusters_kind ON quest_clusters(cluster_kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_details_planet",
+      "sql": "CREATE INDEX idx_quest_details_planet ON quest_details(planet)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_details_type",
+      "sql": "CREATE INDEX idx_quest_details_type ON quest_details(mission_type)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_milestones_quest",
+      "sql": "CREATE INDEX idx_quest_milestones_quest ON quest_milestones(quest_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_milestones_terminal",
+      "sql": "CREATE INDEX idx_quest_milestones_terminal ON quest_milestones(is_terminal)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_name_tags_activity",
+      "sql": "CREATE INDEX idx_quest_name_tags_activity ON quest_name_tags(activity_type)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_name_tags_cadence",
+      "sql": "CREATE INDEX idx_quest_name_tags_cadence ON quest_name_tags(cadence)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_objectives_kind",
+      "sql": "CREATE INDEX idx_quest_objectives_kind ON quest_objectives(kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_objectives_quest_fqn",
+      "sql": "CREATE INDEX idx_quest_objectives_quest_fqn ON quest_objectives(quest_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_objectives_target",
+      "sql": "CREATE INDEX idx_quest_objectives_target ON quest_objectives(target_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_text_kind",
+      "sql": "CREATE INDEX idx_quest_text_kind ON quest_text(kind)",
+      "type": "index"
+    },
+    {
+      "name": "idx_quest_text_string",
+      "sql": "CREATE INDEX idx_quest_text_string ON quest_text(string_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_relic_procs_stat",
+      "sql": "CREATE INDEX idx_relic_procs_stat ON relic_procs(proc_stat)",
+      "type": "index"
+    },
+    {
+      "name": "idx_schematic_materials_mat",
+      "sql": "CREATE INDEX idx_schematic_materials_mat ON schematic_materials(material_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_singletons_size",
+      "sql": "CREATE INDEX idx_singletons_size ON singletons(payload_size DESC)",
+      "type": "index"
+    },
+    {
+      "name": "idx_spawn_runtime_ids_runtime",
+      "sql": "CREATE INDEX idx_spawn_runtime_ids_runtime ON spawn_runtime_ids(runtime_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_spawn_runtime_ids_target",
+      "sql": "CREATE INDEX idx_spawn_runtime_ids_target ON spawn_runtime_ids(target_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_stat_curve_values_proto",
+      "sql": "CREATE INDEX idx_stat_curve_values_proto\n                ON stat_curve_values(prototype, curve_hash, ordinal)",
+      "type": "index"
+    },
+    {
+      "name": "idx_strings_id2",
+      "sql": "CREATE INDEX idx_strings_id2 ON strings(id2)",
+      "type": "index"
+    },
+    {
+      "name": "idx_tags_fqn",
+      "sql": "CREATE INDEX idx_tags_fqn ON tags(tag_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "idx_talent_abilities_ability",
+      "sql": "CREATE INDEX idx_talent_abilities_ability ON talent_abilities(ability_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_talent_abilities_talent",
+      "sql": "CREATE INDEX idx_talent_abilities_talent  ON talent_abilities(talent_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_talent_details_hook",
+      "sql": "CREATE INDEX idx_talent_details_hook ON talent_details(script_hook)",
+      "type": "index"
+    },
+    {
+      "name": "idx_talent_details_pool",
+      "sql": "CREATE INDEX idx_talent_details_pool ON talent_details(resource_pool)",
+      "type": "index"
+    },
+    {
+      "name": "idx_talent_stat_effects_stat",
+      "sql": "CREATE INDEX idx_talent_stat_effects_stat\n                ON talent_stat_effects(stat_name)",
+      "type": "index"
+    },
+    {
+      "name": "idx_talent_tags_game_id",
+      "sql": "CREATE INDEX idx_talent_tags_game_id ON talent_tags(talent_game_id)",
+      "type": "index"
+    },
+    {
+      "name": "idx_talent_tags_tag",
+      "sql": "CREATE INDEX idx_talent_tags_tag ON talent_tags(tag_hash)",
+      "type": "index"
+    },
+    {
+      "name": "idx_venture_objectives_ach",
+      "sql": "CREATE INDEX idx_venture_objectives_ach ON venture_objectives(achievement_fqn)",
+      "type": "index"
+    },
+    {
+      "name": "ability_action_params",
+      "sql": "CREATE TABLE ability_action_params (\n                ability_fqn       TEXT NOT NULL,\n                effect_ordinal    INTEGER NOT NULL,\n                param_ordinal     INTEGER NOT NULL,\n                effparam_index    INTEGER NOT NULL,\n                effparam_name     TEXT,\n                value_f32         REAL NOT NULL,\n                PRIMARY KEY (ability_fqn, effect_ordinal, param_ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ability_damage_params",
+      "sql": "CREATE TABLE ability_damage_params (\n                ability_fqn       TEXT NOT NULL,\n                effect_ordinal    INTEGER NOT NULL,\n                param_ordinal     INTEGER NOT NULL,\n                cc_id_hex         TEXT NOT NULL,\n                value_i8          INTEGER NOT NULL,\n                PRIMARY KEY (ability_fqn, effect_ordinal, param_ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ability_desc_tokens",
+      "sql": "CREATE TABLE ability_desc_tokens (\n                ability_fqn TEXT NOT NULL,\n                token_index INTEGER NOT NULL,\n                token_type  TEXT NOT NULL,\n                PRIMARY KEY (ability_fqn, token_index)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ability_effect_blocks",
+      "sql": "CREATE TABLE ability_effect_blocks (\n                parent_game_id    TEXT NOT NULL,\n                block_index       INTEGER NOT NULL,\n                block_guid        TEXT NOT NULL,\n                block_game_id     TEXT,\n                PRIMARY KEY (parent_game_id, block_index),\n                FOREIGN KEY (parent_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ability_effect_params",
+      "sql": "CREATE TABLE ability_effect_params (\n                ability_fqn       TEXT NOT NULL,\n                ordinal           INTEGER NOT NULL,\n                source            TEXT NOT NULL CHECK (source IN ('CE','CF')),\n                param_flag        INTEGER NOT NULL,\n                value_f32         REAL NOT NULL,\n                PRIMARY KEY (ability_fqn, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ability_effects",
+      "sql": "CREATE TABLE ability_effects (\n                ability_fqn       TEXT NOT NULL,\n                ordinal           INTEGER NOT NULL,\n                kind              TEXT NOT NULL CHECK (kind IN ('action','condition','initializer','logic_op')),\n                enum_index        INTEGER NOT NULL,\n                enum_member       TEXT NOT NULL,\n                PRIMARY KEY (ability_fqn, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ability_stats",
+      "sql": "CREATE TABLE ability_stats (\n                ability_game_id     TEXT PRIMARY KEY,\n                resource_pool       TEXT,    -- force | rage | focus | heat | ammo | energy | NULL\n                cooldown            REAL,    -- 0x0401, seconds\n                cast_time           REAL,    -- 0x041b, seconds (cast or channel)\n                channel_duration    REAL,    -- 0x0406, seconds\n                hard_cast_time      REAL,    -- 0x041a, alternate cast prop\n                force_cost          INTEGER, -- 0x0403, Force-pool cost (sorcerer/sage)\n                resource_cost       INTEGER, -- 0x041e, heat/energy/ammo cost (tech)\n                raw_props           TEXT,    -- JSON {hex_id: f32} for all in-block 0x04xx records\n                FOREIGN KEY (ability_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ability_tags",
+      "sql": "CREATE TABLE ability_tags (\n                ability_fqn        TEXT NOT NULL,\n                ability_game_id    TEXT,\n                tag_hash           TEXT NOT NULL,\n                tag_fqn            TEXT NOT NULL,\n                PRIMARY KEY (ability_fqn, tag_hash),\n                FOREIGN KEY (tag_hash) REFERENCES tags(tag_hash)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "achievement_refs",
+      "sql": "CREATE TABLE achievement_refs (\n                achievement_fqn TEXT NOT NULL,\n                ordinal         INTEGER NOT NULL,\n                ref_fqn         TEXT NOT NULL,\n                ref_kind        TEXT NOT NULL,\n                PRIMARY KEY (achievement_fqn, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "achievement_reward_items",
+      "sql": "CREATE TABLE achievement_reward_items (\n                reward_id INTEGER NOT NULL,\n                points    INTEGER,\n                ordinal   INTEGER NOT NULL,\n                item_fqn  TEXT,\n                quantity  INTEGER,\n                PRIMARY KEY (reward_id, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "achievement_tasks",
+      "sql": "CREATE TABLE achievement_tasks (\n                achievement_fqn TEXT NOT NULL,\n                task_index      INTEGER NOT NULL,\n                text            TEXT NOT NULL,\n                PRIMARY KEY (achievement_fqn, task_index)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "achievements",
+      "sql": "CREATE TABLE achievements (\n                fqn         TEXT PRIMARY KEY,\n                game_id     TEXT NOT NULL,\n                string_id   INTEGER,\n                name        TEXT,\n                description TEXT,\n                task_count  INTEGER NOT NULL DEFAULT 0\n            )",
+      "type": "table"
+    },
+    {
+      "name": "appearance_specs",
+      "sql": "CREATE TABLE appearance_specs (\n                fqn                 TEXT PRIMARY KEY,\n                appearance_actions  TEXT,\n                fx_spec_refs        TEXT,\n                raw_xml             TEXT NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "armor_classes",
+      "sql": "CREATE TABLE armor_classes (\n                ordinal  INTEGER PRIMARY KEY,\n                code     INTEGER NOT NULL,\n                name     TEXT NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "class_utility_talents",
+      "sql": "CREATE TABLE class_utility_talents (\n                combat_style_codename  TEXT NOT NULL,\n                talent_game_id         TEXT NOT NULL,\n                talent_fqn             TEXT NOT NULL,\n                PRIMARY KEY (combat_style_codename, talent_game_id),\n                FOREIGN KEY (talent_game_id) REFERENCES objects(game_id),\n                FOREIGN KEY (combat_style_codename) REFERENCES combat_styles(fqn_segment)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "combat_style_shared_abilities",
+      "sql": "CREATE TABLE combat_style_shared_abilities (\n                combat_style_codename  TEXT NOT NULL,\n                ability_game_id        TEXT NOT NULL,\n                ability_fqn            TEXT NOT NULL,\n                slot_type              TEXT NOT NULL,\n                PRIMARY KEY (combat_style_codename, ability_game_id, slot_type),\n                FOREIGN KEY (ability_game_id) REFERENCES objects(game_id),\n                FOREIGN KEY (combat_style_codename) REFERENCES combat_styles(fqn_segment)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "combat_styles",
+      "sql": "CREATE TABLE combat_styles (\n                combat_style_id TEXT PRIMARY KEY,   -- game_id of class.pc.advanced.<style>\n                fqn             TEXT NOT NULL UNIQUE,\n                fqn_segment     TEXT NOT NULL UNIQUE,     -- internal name ('force_wizard', 'specialist', ...)\n                display_segment TEXT NOT NULL,     -- canonical name ('sage', 'vanguard', ...)\n                faction         TEXT NOT NULL,     -- 'empire' | 'republic' (legacy adv-class faction)\n                attack_type     TEXT NOT NULL,     -- 'force' | 'tech'\n                string_id       INTEGER,           -- -> strings.id2 from cdx.advanced_classes.<display>\n                FOREIGN KEY (combat_style_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "companions",
+      "sql": "CREATE TABLE companions (\n                fqn           TEXT PRIMARY KEY,\n                companion_key TEXT NOT NULL,\n                name          TEXT,\n                category      TEXT NOT NULL,\n                string_id     INTEGER,\n                guid          TEXT\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conquest_events",
+      "sql": "CREATE TABLE conquest_events (\n                ordinal      INTEGER PRIMARY KEY,\n                event_name   TEXT NOT NULL,\n                planet_code  TEXT,\n                event_kind   TEXT NOT NULL,    -- 'invasion' | 'themed'\n                record_size  INTEGER NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conquest_objectives",
+      "sql": "CREATE TABLE conquest_objectives (\n                fqn         TEXT PRIMARY KEY,\n                category    TEXT NOT NULL,   -- chapter|class|crafting|event|flashpoint|galactic_seasons|location|operation|spvp|uprisings|quest|weekly\n                subcategory TEXT,            -- e.g. 'tatooine' (location), 'bounty' (event), 'bounty_hunter' (class)\n                cadence     TEXT,            -- 'weekly' | 'daily' | NULL\n                string_id   INTEGER\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conquest_schedule",
+      "sql": "CREATE TABLE conquest_schedule (\n                week_ordinal  INTEGER PRIMARY KEY,\n                event_guid    TEXT NOT NULL,\n                event_ordinal INTEGER,\n                event_name    TEXT\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_achievements",
+      "sql": "CREATE TABLE conversation_achievements (\n                cnv_fqn TEXT NOT NULL,\n                achievement_fqn TEXT NOT NULL,\n                PRIMARY KEY (cnv_fqn, achievement_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_alignment_events",
+      "sql": "CREATE TABLE conversation_alignment_events (\n                cnv_fqn TEXT NOT NULL,\n                event_kind TEXT NOT NULL,\n                event_count INTEGER NOT NULL,\n                PRIMARY KEY (cnv_fqn, event_kind)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_codex",
+      "sql": "CREATE TABLE conversation_codex (\n                cnv_fqn TEXT NOT NULL,\n                codex_fqn TEXT NOT NULL,\n                PRIMARY KEY (cnv_fqn, codex_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_dialogue",
+      "sql": "CREATE TABLE conversation_dialogue (\n                cnv_fqn         TEXT NOT NULL,\n                seq             INTEGER NOT NULL,\n                line_id         INTEGER NOT NULL,\n                line_ref        TEXT NOT NULL,\n                speaker_guid    TEXT,\n                speaker_npc_fqn TEXT,\n                speaker_role    TEXT NOT NULL DEFAULT 'player',\n                PRIMARY KEY (cnv_fqn, seq)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_encounters",
+      "sql": "CREATE TABLE conversation_encounters (\n                cnv_fqn TEXT NOT NULL,\n                encounter_fqn TEXT NOT NULL,\n                PRIMARY KEY (cnv_fqn, encounter_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_followups",
+      "sql": "CREATE TABLE conversation_followups (\n                cnv_fqn TEXT NOT NULL,\n                target_cnv_fqn TEXT NOT NULL,\n                PRIMARY KEY (cnv_fqn, target_cnv_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_items",
+      "sql": "CREATE TABLE conversation_items (\n                cnv_fqn TEXT NOT NULL,\n                item_fqn TEXT NOT NULL,\n                PRIMARY KEY (cnv_fqn, item_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_npcs",
+      "sql": "CREATE TABLE conversation_npcs (\n                cnv_fqn TEXT NOT NULL,\n                npc_fqn TEXT NOT NULL,\n                PRIMARY KEY (cnv_fqn, npc_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_options",
+      "sql": "CREATE TABLE conversation_options (\n                cnv_fqn      TEXT NOT NULL,\n                decision_seq INTEGER NOT NULL,\n                option_index INTEGER NOT NULL,\n                line_id      INTEGER,\n                target_seq   INTEGER,\n                alignment    TEXT,\n                PRIMARY KEY (cnv_fqn, decision_seq, option_index)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "conversation_quest_refs",
+      "sql": "CREATE TABLE conversation_quest_refs (\n                cnv_fqn TEXT NOT NULL,\n                quest_fqn TEXT NOT NULL,\n                PRIMARY KEY (cnv_fqn, quest_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "description_values",
+      "sql": "CREATE TABLE description_values (\n                object_game_id TEXT NOT NULL,    -- objects.game_id of the described object\n                fqn            TEXT NOT NULL,     -- denormalized for query convenience\n                string_id      INTEGER NOT NULL,  -- strings.id2 (id1=1) parsed from\n                seq            INTEGER NOT NULL,   -- 0-based order of the fact in the description\n                kind           TEXT NOT NULL,     -- percent|duration_seconds|range_meters|count|magnitude|template\n                value          REAL,              -- normalized literal value; NULL for template\n                label          TEXT,              -- stat/unit word (\"power\",\"seconds\",\"chance\")\n                token_ordinal  INTEGER,           -- N for a <<N>> template fact, else NULL\n                PRIMARY KEY (object_game_id, string_id, seq)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "discipline_abilities",
+      "sql": "CREATE TABLE discipline_abilities (\n                discipline_fqn_prefix  TEXT NOT NULL,\n                ability_game_id        TEXT NOT NULL,\n                ability_fqn            TEXT NOT NULL,\n                tier_level             INTEGER,\n                slot_type              TEXT NOT NULL,\n                PRIMARY KEY (discipline_fqn_prefix, ability_game_id),\n                FOREIGN KEY (ability_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "discipline_mods",
+      "sql": "CREATE TABLE discipline_mods (\n                discipline_fqn_prefix     TEXT NOT NULL,\n                mod_index                 INTEGER NOT NULL,\n                tier_ordinal              INTEGER NOT NULL,\n                ui_position               INTEGER NOT NULL,\n                level_required            INTEGER NOT NULL,\n                target_guid               TEXT NOT NULL,\n                target_game_id            TEXT,\n                is_default                INTEGER NOT NULL,\n                PRIMARY KEY (discipline_fqn_prefix, mod_index),\n                FOREIGN KEY (discipline_fqn_prefix) REFERENCES disciplines(fqn_prefix)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "discipline_talents",
+      "sql": "CREATE TABLE discipline_talents (\n                discipline_fqn_prefix  TEXT NOT NULL,\n                talent_game_id         TEXT NOT NULL,\n                talent_fqn             TEXT NOT NULL,\n                PRIMARY KEY (discipline_fqn_prefix, talent_game_id),\n                FOREIGN KEY (talent_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "disciplines",
+      "sql": "CREATE TABLE disciplines (\n                origin_codename        TEXT NOT NULL,\n                discipline_name        TEXT NOT NULL,\n                fqn_prefix             TEXT NOT NULL UNIQUE,  -- e.g. \"abl.jedi_knight.skill.defense\"\n                combat_style_codename  TEXT NOT NULL,\n                PRIMARY KEY (origin_codename, discipline_name),\n                FOREIGN KEY (combat_style_codename) REFERENCES combat_styles(fqn_segment)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "fx_specs",
+      "sql": "CREATE TABLE fx_specs (\n                file_hash           TEXT PRIMARY KEY,\n                fqn                 TEXT UNIQUE,\n                node_classes_json   TEXT NOT NULL,\n                raw_xml             TEXT NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "gsf_ability_stats",
+      "sql": "CREATE TABLE gsf_ability_stats (\n                ability_game_id TEXT NOT NULL,\n                label           TEXT NOT NULL,\n                unit            TEXT NOT NULL,\n                rank            INTEGER NOT NULL,\n                value           REAL NOT NULL,\n                confidence      TEXT NOT NULL,\n                prop_id         INTEGER NOT NULL,  -- raw u16 for forensics\n                payload_ordinal INTEGER,           -- 0-based payload emission order of this record; the index a <<N>> description template anchors to (distinct from per-label `rank`). #309.\n                PRIMARY KEY (ability_game_id, label, rank),\n                FOREIGN KEY (ability_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "gsf_crew",
+      "sql": "CREATE TABLE gsf_crew (\n                ordinal        INTEGER PRIMARY KEY,\n                icon_name      TEXT NOT NULL,\n                crew_name      TEXT NOT NULL,\n                idle_animation TEXT\n            )",
+      "type": "table"
+    },
+    {
+      "name": "gsf_loadout_slots",
+      "sql": "CREATE TABLE gsf_loadout_slots (\n                template_code  TEXT NOT NULL,\n                slot_kind      TEXT NOT NULL CHECK (slot_kind IN ('major', 'minor')),\n                slot_type      TEXT NOT NULL,\n                slot_ordinal   INTEGER NOT NULL,\n                PRIMARY KEY (template_code, slot_type, slot_ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "gsf_requisition_costs",
+      "sql": "CREATE TABLE gsf_requisition_costs (\n                target_guid       TEXT NOT NULL,\n                cost_kind         TEXT NOT NULL CHECK (cost_kind IN ('component_unlock', 'tier_upgrade')),\n                tier              INTEGER NOT NULL,\n                cost              INTEGER NOT NULL,\n                target_game_id    TEXT,\n                target_fqn        TEXT,\n                art_path          TEXT,\n                component_kind    TEXT,\n                PRIMARY KEY (target_guid, cost_kind, tier)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "gsf_ships",
+      "sql": "CREATE TABLE gsf_ships (\n                fqn         TEXT PRIMARY KEY,\n                game_id     TEXT,\n                name        TEXT,\n                faction     TEXT,\n                ship_class  TEXT\n            )",
+      "type": "table"
+    },
+    {
+      "name": "gsf_talent_stats",
+      "sql": "CREATE TABLE gsf_talent_stats (\n                talent_game_id  TEXT NOT NULL,\n                label           TEXT NOT NULL,\n                unit            TEXT NOT NULL,\n                rank            INTEGER NOT NULL,\n                value           REAL NOT NULL,\n                confidence      TEXT NOT NULL,\n                stat_id         INTEGER NOT NULL,  -- raw byte for forensics\n                PRIMARY KEY (talent_game_id, label, rank),\n                FOREIGN KEY (talent_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "hydra_refs",
+      "sql": "CREATE TABLE hydra_refs (\n                hyd_fqn      TEXT NOT NULL,\n                ordinal      INTEGER NOT NULL,\n                ref_kind     TEXT NOT NULL,\n                ref_fqn      TEXT NOT NULL,\n                PRIMARY KEY (hyd_fqn, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_budget_table",
+      "sql": "CREATE TABLE item_budget_table (\n                quality    TEXT NOT NULL,\n                item_level INTEGER NOT NULL,\n                permille   INTEGER NOT NULL,\n                value      INTEGER NOT NULL,\n                PRIMARY KEY (quality, item_level, permille)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_details",
+      "sql": "CREATE TABLE item_details (\n                fqn TEXT PRIMARY KEY,\n                item_kind TEXT NOT NULL,\n                slot TEXT,\n                weapon_type TEXT,\n                armor_weight TEXT,\n                rarity TEXT,\n                item_level INTEGER,\n                source TEXT,\n                is_schematic INTEGER NOT NULL DEFAULT 0,\n                crew_skill TEXT\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_granted_abilities",
+      "sql": "CREATE TABLE item_granted_abilities (\n                item_fqn     TEXT PRIMARY KEY,\n                item_game_id TEXT,\n                ability_guid TEXT NOT NULL,\n                ability_fqn  TEXT,\n                ability_kind TEXT,\n                effect_text  TEXT\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_modifier_packages",
+      "sql": "CREATE TABLE item_modifier_packages (\n                mod_id     INTEGER NOT NULL,\n                stat_index INTEGER NOT NULL,\n                stat_name  TEXT NOT NULL,\n                permille   INTEGER NOT NULL,\n                PRIMARY KEY (mod_id, stat_index)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_rating_table",
+      "sql": "CREATE TABLE item_rating_table (\n                item_level INTEGER NOT NULL,\n                quality    TEXT NOT NULL,\n                rating     INTEGER NOT NULL,\n                PRIMARY KEY (item_level, quality)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_set_members",
+      "sql": "CREATE TABLE item_set_members (\n                item_game_id    TEXT NOT NULL,\n                set_fqn         TEXT NOT NULL,\n                slot            TEXT NOT NULL,\n                PRIMARY KEY (item_game_id, set_fqn),\n                FOREIGN KEY (item_game_id) REFERENCES objects(game_id),\n                FOREIGN KEY (set_fqn) REFERENCES item_sets(set_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_sets",
+      "sql": "CREATE TABLE item_sets (\n                set_fqn         TEXT PRIMARY KEY,\n                source          TEXT,\n                class_group     TEXT,\n                name_string_id  INTEGER\n            )",
+      "type": "table"
+    },
+    {
+      "name": "item_stats",
+      "sql": "CREATE TABLE item_stats (\n                item_fqn     TEXT NOT NULL,\n                item_game_id TEXT,\n                item_level   INTEGER,\n                quality      TEXT,\n                rating       INTEGER,\n                stat_index   INTEGER NOT NULL,\n                stat_name    TEXT NOT NULL,\n                value        INTEGER NOT NULL,\n                PRIMARY KEY (item_fqn, stat_index)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "mission_npcs",
+      "sql": "CREATE TABLE mission_npcs (\n                mission_fqn TEXT NOT NULL,\n                npc_fqn     TEXT NOT NULL,\n                PRIMARY KEY (mission_fqn, npc_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "mission_rewards",
+      "sql": "CREATE TABLE mission_rewards (\n                mission_fqn     TEXT NOT NULL,\n                reward_variable TEXT NOT NULL,\n                PRIMARY KEY (mission_fqn, reward_variable)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "missions",
+      "sql": "CREATE TABLE missions (\n                mission_fqn TEXT PRIMARY KEY,\n                source      TEXT NOT NULL  -- 'qst' or 'mpn-prefix'\n            )",
+      "type": "table"
+    },
+    {
+      "name": "npc_details",
+      "sql": "CREATE TABLE npc_details (\n                fqn               TEXT PRIMARY KEY,\n                difficulty        TEXT,\n                faction           TEXT,\n                class_role        TEXT,\n                ai_template       TEXT,\n                level             INTEGER\n            )",
+      "type": "table"
+    },
+    {
+      "name": "object_cc_refs",
+      "sql": "CREATE TABLE object_cc_refs (\n                object_game_id     TEXT NOT NULL,\n                ordinal            INTEGER NOT NULL,\n                cc_id_hex          TEXT NOT NULL,\n                cc_known_name      TEXT,\n                value_bytes_hex    TEXT NOT NULL,\n                PRIMARY KEY (object_game_id, ordinal),\n                FOREIGN KEY (object_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "object_string_refs",
+      "sql": "CREATE TABLE object_string_refs (\n                guid      TEXT PRIMARY KEY,\n                string_id INTEGER NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "objects",
+      "sql": "CREATE TABLE objects (\n                game_id TEXT PRIMARY KEY,\n                stable_id TEXT NOT NULL,\n                payload_hash TEXT NOT NULL,\n                guid TEXT NOT NULL,\n                template_guid TEXT NOT NULL DEFAULT '',\n                fqn TEXT NOT NULL,\n                kind TEXT NOT NULL,\n                icon_name TEXT,\n                string_id INTEGER,\n                for_export INTEGER NOT NULL DEFAULT 1,\n                is_canonical INTEGER NOT NULL DEFAULT 1,\n                version INTEGER NOT NULL DEFAULT 0,\n                revision INTEGER NOT NULL DEFAULT 0,\n                json TEXT NOT NULL,\n                created_at INTEGER NOT NULL DEFAULT (unixepoch())\n            )",
+      "type": "table"
+    },
+    {
+      "name": "origins",
+      "sql": "CREATE TABLE origins (\n                fqn_segment    TEXT PRIMARY KEY,    -- 'sith_warrior', 'agent', etc.\n                faction        TEXT NOT NULL,      -- 'empire' | 'republic'\n                attack_type    TEXT NOT NULL,      -- 'force' | 'tech'\n                string_id      INTEGER             -- -> strings.id2 (NULL until source confirmed)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_chain",
+      "sql": "CREATE TABLE quest_chain (\n                source_game_id TEXT NOT NULL,\n                target_game_id TEXT NOT NULL,\n                link_type TEXT NOT NULL,\n                PRIMARY KEY (source_game_id, target_game_id),\n                FOREIGN KEY (source_game_id) REFERENCES objects(game_id),\n                FOREIGN KEY (target_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_clusters",
+      "sql": "CREATE TABLE quest_clusters (\n                quest_fqn TEXT NOT NULL,\n                cluster_kind TEXT NOT NULL,\n                cluster_id TEXT NOT NULL,\n                PRIMARY KEY (quest_fqn, cluster_kind, cluster_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_details",
+      "sql": "CREATE TABLE quest_details (\n                fqn TEXT PRIMARY KEY,\n                mission_type TEXT NOT NULL,\n                faction TEXT,\n                planet TEXT,\n                class_code TEXT,\n                companion_class TEXT,\n                step_count INTEGER DEFAULT 0\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_milestones",
+      "sql": "CREATE TABLE quest_milestones (\n                quest_fqn       TEXT NOT NULL,\n                milestone_name  TEXT NOT NULL,\n                is_terminal     INTEGER NOT NULL,\n                PRIMARY KEY (quest_fqn, milestone_name)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_name_tags",
+      "sql": "CREATE TABLE quest_name_tags (\n                string_id     INTEGER PRIMARY KEY,\n                name          TEXT NOT NULL,   -- full display name incl. bracket\n                name_clean    TEXT NOT NULL,   -- bracket tags stripped\n                activity_type TEXT,            -- heroic|flashpoint|uprising|operation|world_boss|pvp|area\n                difficulty    TEXT,            -- story|veteran|master|solo (flashpoint mode)\n                group_size    INTEGER,         -- 2 | 4 (heroic/area player count)\n                cadence       TEXT             -- daily|weekly\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_npcs",
+      "sql": "CREATE TABLE quest_npcs (\n                quest_fqn TEXT NOT NULL,\n                npc_fqn TEXT NOT NULL,\n                PRIMARY KEY (quest_fqn, npc_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_objective_flags",
+      "sql": "CREATE TABLE quest_objective_flags (\n                quest_fqn       TEXT NOT NULL,\n                ordinal         INTEGER NOT NULL,\n                flag_name       TEXT NOT NULL,\n                flag_category   TEXT NOT NULL,\n                PRIMARY KEY (quest_fqn, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_objectives",
+      "sql": "CREATE TABLE quest_objectives (\n                quest_game_id   TEXT NOT NULL,\n                quest_fqn       TEXT NOT NULL,\n                ordinal         INTEGER NOT NULL,\n                target_fqn      TEXT,\n                kind            TEXT NOT NULL,\n                count           INTEGER,\n                name_string_id  INTEGER,\n                raw_props       TEXT,\n                PRIMARY KEY (quest_game_id, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_phases",
+      "sql": "CREATE TABLE quest_phases (\n                quest_fqn TEXT NOT NULL,\n                phase_fqn TEXT NOT NULL,\n                PRIMARY KEY (quest_fqn, phase_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_prerequisites",
+      "sql": "CREATE TABLE quest_prerequisites (\n                fqn TEXT NOT NULL,\n                variable TEXT NOT NULL,\n                PRIMARY KEY (fqn, variable)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_tasks",
+      "sql": "CREATE TABLE quest_tasks (\n                quest_fqn  TEXT NOT NULL,\n                branch     INTEGER NOT NULL,\n                step       INTEGER NOT NULL,\n                task       INTEGER NOT NULL,\n                text_slot  INTEGER,\n                text       TEXT,\n                map_notes  TEXT,      -- JSON array, '[]' when none\n                hook_state INTEGER,\n                hook_name  TEXT,\n                PRIMARY KEY (quest_fqn, branch, step, task)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "quest_text",
+      "sql": "CREATE TABLE quest_text (\n                string_id INTEGER NOT NULL,\n                slot      INTEGER NOT NULL,   -- STB id1 field slot (ordering)\n                kind      TEXT NOT NULL,      -- objective | journal | reference\n                text      TEXT NOT NULL,\n                PRIMARY KEY (string_id, slot)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "relic_procs",
+      "sql": "CREATE TABLE relic_procs (\n                relic_fqn         TEXT PRIMARY KEY,\n                relic_game_id     TEXT,\n                trigger_kind      TEXT,   -- 'proc' (passive) or 'onuse' (activated); NULL if neither\n                proc_stat         TEXT,   -- see proc_stat(): power/critical/mastery/defense/healing/absorb/alacrity/damage, or NULL\n                proc_ability_guid TEXT,   -- granted-ability guid (item field 0x2d7b8786)\n                proc_buff_name    TEXT,   -- proc-buff ability name (strings id1=0), e.g. \"Power Surge\"\n                proc_chance_pct   INTEGER,-- \"(\\\\d+)% chance\" from the effect string\n                proc_magnitude    INTEGER,-- \"grant (\\\\d+) <stat>\" from the effect string\n                proc_icd_seconds  INTEGER -- \"once every (\\\\d+) seconds\" from the effect string\n            )",
+      "type": "table"
+    },
+    {
+      "name": "schematic_details",
+      "sql": "CREATE TABLE schematic_details (\n                fqn               TEXT PRIMARY KEY,\n                profession        TEXT,\n                tier              INTEGER,\n                training_cost     INTEGER\n            )",
+      "type": "table"
+    },
+    {
+      "name": "schematic_materials",
+      "sql": "CREATE TABLE schematic_materials (\n                schematic_fqn TEXT NOT NULL,\n                material_fqn TEXT NOT NULL,\n                quantity INTEGER NOT NULL,\n                PRIMARY KEY (schematic_fqn, material_fqn)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "schematics",
+      "sql": "CREATE TABLE schematics (\n                schematic_fqn TEXT PRIMARY KEY,\n                output_fqn TEXT,\n                output_resolved INTEGER NOT NULL DEFAULT 0\n            )",
+      "type": "table"
+    },
+    {
+      "name": "scripts",
+      "sql": "CREATE TABLE scripts (\n                script_id          INTEGER PRIMARY KEY,\n                decoded_size       INTEGER NOT NULL,\n                decoded_body_b64   TEXT NOT NULL,\n                extracted_at       INTEGER NOT NULL DEFAULT (unixepoch())\n            )",
+      "type": "table"
+    },
+    {
+      "name": "singletons",
+      "sql": "CREATE TABLE singletons (\n                fqn            TEXT PRIMARY KEY,\n                payload_size   INTEGER NOT NULL,\n                payload_b64    TEXT NOT NULL,\n                string_count   INTEGER NOT NULL,\n                cf_e0_count    INTEGER NOT NULL,\n                cf_40_count    INTEGER NOT NULL,\n                header_hex     TEXT NOT NULL,\n                extracted_at   INTEGER NOT NULL DEFAULT (unixepoch())\n            )",
+      "type": "table"
+    },
+    {
+      "name": "spawn_runtime_ids",
+      "sql": "CREATE TABLE spawn_runtime_ids (\n                spn_fqn     TEXT NOT NULL,\n                target_fqn  TEXT NOT NULL,\n                runtime_id  INTEGER NOT NULL,\n                PRIMARY KEY (spn_fqn, target_fqn, runtime_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "stat_curve_values",
+      "sql": "CREATE TABLE stat_curve_values (\n                id          INTEGER PRIMARY KEY,\n                prototype   TEXT NOT NULL,\n                curve_hash  TEXT,\n                ordinal     INTEGER NOT NULL,\n                value       REAL NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "strings",
+      "sql": "CREATE TABLE strings (\n                fqn TEXT PRIMARY KEY,          -- Full FQN: \"str.abl.sith_inquisitor.skill.corruption.innervate\"\n                locale TEXT NOT NULL,          -- Locale: \"en-us\"\n                id1 INTEGER NOT NULL,          -- STB ID1\n                id2 INTEGER NOT NULL,          -- STB ID2 (links to objects.string_id)\n                text TEXT NOT NULL,            -- Display text (grammar-cleaned: <<N>> templates stripped)\n                text_raw TEXT,                 -- Raw STB text before grammar.clean(); NULL when identical to `text`. Preserves <<N>> positional templates for stat-value/label anchoring.\n                version INTEGER DEFAULT 0\n            )",
+      "type": "table"
+    },
+    {
+      "name": "tags",
+      "sql": "CREATE TABLE tags (\n                tag_hash       TEXT PRIMARY KEY,\n                tag_fqn        TEXT NOT NULL,\n                hash_marker    TEXT NOT NULL CHECK (hash_marker IN ('CE', 'CF'))\n            )",
+      "type": "table"
+    },
+    {
+      "name": "talent_abilities",
+      "sql": "CREATE TABLE talent_abilities (\n                talent_game_id   TEXT NOT NULL,\n                talent_fqn       TEXT NOT NULL,\n                ability_game_id  TEXT NOT NULL,\n                ability_fqn      TEXT,           -- NULL if GUID not in our object set\n                PRIMARY KEY (talent_game_id, ability_game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "talent_details",
+      "sql": "CREATE TABLE talent_details (\n                talent_game_id  TEXT PRIMARY KEY,\n                resource_pool   TEXT,    -- force | rage | focus | heat | ammo | energy | gsf | NULL\n                tier            TEXT,    -- FQN last segment\n                script_hook     TEXT,    -- payload tail string, NULL if none\n                FOREIGN KEY (talent_game_id) REFERENCES objects(game_id)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "talent_stat_effects",
+      "sql": "CREATE TABLE talent_stat_effects (\n                talent_fqn        TEXT NOT NULL,\n                ordinal           INTEGER NOT NULL,\n                stat_index        INTEGER NOT NULL,\n                stat_name         TEXT NOT NULL,\n                magnitude         REAL NOT NULL,\n                PRIMARY KEY (talent_fqn, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "talent_tags",
+      "sql": "CREATE TABLE talent_tags (\n                talent_fqn         TEXT NOT NULL,\n                talent_game_id     TEXT,\n                tag_hash           TEXT NOT NULL,\n                tag_fqn            TEXT NOT NULL,\n                PRIMARY KEY (talent_fqn, tag_hash),\n                FOREIGN KEY (tag_hash) REFERENCES tags(tag_hash)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "unread_objects",
+      "sql": "CREATE TABLE unread_objects (\n                guid    TEXT PRIMARY KEY,\n                flag    INTEGER NOT NULL,\n                reason  TEXT NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "venture_categories",
+      "sql": "CREATE TABLE venture_categories (\n                venture_id  INTEGER NOT NULL,\n                stage       INTEGER NOT NULL,\n                ordinal     INTEGER NOT NULL,\n                category_id INTEGER,\n                name        TEXT,\n                icon        TEXT,\n                PRIMARY KEY (venture_id, stage, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "venture_objectives",
+      "sql": "CREATE TABLE venture_objectives (\n                venture_id      INTEGER NOT NULL,\n                stage           INTEGER NOT NULL,\n                category_id     INTEGER,\n                ordinal         INTEGER NOT NULL,\n                achievement_fqn TEXT NOT NULL,\n                PRIMARY KEY (venture_id, stage, category_id, ordinal)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "venture_stages",
+      "sql": "CREATE TABLE venture_stages (\n                venture_id           INTEGER NOT NULL,\n                stage                INTEGER NOT NULL,\n                meta_achievement_fqn TEXT,\n                name                 TEXT,\n                theme                TEXT,\n                PRIMARY KEY (venture_id, stage)\n            )",
+      "type": "table"
+    },
+    {
+      "name": "ventures",
+      "sql": "CREATE TABLE ventures (\n                venture_id  INTEGER PRIMARY KEY,\n                name        TEXT,\n                kind        TEXT NOT NULL,\n                type_code   INTEGER NOT NULL,\n                class       TEXT,\n                class_index INTEGER,\n                stage_count INTEGER NOT NULL\n            )",
+      "type": "table"
+    },
+    {
+      "name": "abilities",
+      "sql": "CREATE VIEW abilities AS\n                SELECT * FROM objects\n                WHERE (kind = 'Ability' OR fqn LIKE 'abl.%')\n                  AND is_canonical = 1",
+      "type": "view"
+    },
+    {
+      "name": "bonus_missions",
+      "sql": "CREATE VIEW bonus_missions AS\n                SELECT\n                    o.fqn AS bonus_fqn,\n                    -- Parent quest FQN: drop the trailing `.bonus.<name>`\n                    -- and any segments after `.bonus`. The mpn.* prefix\n                    -- swaps to qst.* for the parent.\n                    'qst.' || substr(\n                        o.fqn,\n                        5,\n                        instr(o.fqn, '.bonus.') - 5\n                    ) AS parent_quest_fqn_guess\n                FROM objects o\n                WHERE o.fqn LIKE 'mpn.%.bonus.%'\n                  AND o.is_canonical = 1",
+      "type": "view"
+    },
+    {
+      "name": "conquest_invasion_bonuses",
+      "sql": "CREATE VIEW conquest_invasion_bonuses AS\n                SELECT id1, locale, substr(text, length('Invasion Bonus - ') + 1) AS categories\n                FROM strings\n                WHERE fqn LIKE 'str.gui.planetaryconquest%'\n                  AND text LIKE 'Invasion Bonus - %'",
+      "type": "view"
+    },
+    {
+      "name": "conquest_theme_strings",
+      "sql": "CREATE VIEW conquest_theme_strings AS\n                SELECT id1, locale, text\n                FROM strings\n                WHERE fqn LIKE 'str.gui.planetaryconquest%'\n                  AND id1 BETWEEN 300 AND 360\n                  AND text NOT LIKE 'Invasion Bonus - %'\n                  AND text NOT LIKE '%not authorized%'\n                  AND text NOT LIKE '%Next Objective%'\n                  AND text NOT LIKE '%Guild Rewards%'\n                  AND text NOT LIKE '%Guild Flagship%'\n                  AND text NOT LIKE '%not a member of a guild%'\n                  AND text NOT LIKE '%currently in review%'\n                  AND text NOT LIKE '%Guild Conquest point%'\n                  AND text != '%'",
+      "type": "view"
+    },
+    {
+      "name": "conversation_lines",
+      "sql": "CREATE VIEW conversation_lines AS\n                SELECT\n                    substr(fqn, 5, length(fqn) - length(id1) - length(id2) - 6) AS cnv_fqn,\n                    id1 AS line_group,\n                    id2 AS line_id,\n                    text\n                FROM strings\n                WHERE fqn LIKE 'str.cnv.%'",
+      "type": "view"
+    },
+    {
+      "name": "items",
+      "sql": "CREATE VIEW items AS\n                SELECT * FROM objects\n                WHERE (kind = 'Item' OR fqn LIKE 'itm.%')\n                  AND is_canonical = 1",
+      "type": "view"
+    },
+    {
+      "name": "mission_catalog",
+      "sql": "CREATE VIEW mission_catalog AS\n                SELECT\n                    t.string_id,\n                    t.name_clean AS name,\n                    t.activity_type,\n                    t.difficulty,\n                    t.group_size,\n                    t.cadence,\n                    (SELECT o.fqn FROM objects o\n                       WHERE o.string_id = t.string_id AND o.kind = 'Quest'\n                         AND o.is_canonical = 1 LIMIT 1) AS quest_fqn,\n                    (SELECT o.game_id FROM objects o\n                       WHERE o.string_id = t.string_id AND o.kind = 'Quest'\n                         AND o.is_canonical = 1 LIMIT 1) AS quest_game_id,\n                    (SELECT d.planet FROM objects o\n                       JOIN quest_details d ON d.fqn = o.fqn\n                       WHERE o.string_id = t.string_id AND o.kind = 'Quest'\n                         AND o.is_canonical = 1 LIMIT 1) AS planet,\n                    (SELECT d.mission_type FROM objects o\n                       JOIN quest_details d ON d.fqn = o.fqn\n                       WHERE o.string_id = t.string_id AND o.kind = 'Quest'\n                         AND o.is_canonical = 1 LIMIT 1) AS mission_type,\n                    EXISTS(SELECT 1 FROM quest_text x\n                       WHERE x.string_id = t.string_id AND x.kind = 'objective') AS has_objectives,\n                    EXISTS(SELECT 1 FROM quest_text x\n                       WHERE x.string_id = t.string_id AND x.kind = 'journal') AS has_journal\n                FROM quest_name_tags t",
+      "type": "view"
+    },
+    {
+      "name": "npcs",
+      "sql": "CREATE VIEW npcs AS\n                SELECT * FROM objects\n                WHERE (kind = 'Npc' OR fqn LIKE 'npc.%')\n                  AND is_canonical = 1",
+      "type": "view"
+    },
+    {
+      "name": "phases",
+      "sql": "CREATE VIEW phases AS\n                SELECT * FROM objects WHERE kind = 'Phase' AND is_canonical = 1",
+      "type": "view"
+    },
+    {
+      "name": "quest_descriptions",
+      "sql": "CREATE VIEW quest_descriptions AS\n                SELECT\n                    o.fqn AS quest_fqn,\n                    s.text AS description\n                FROM objects o\n                JOIN strings s ON s.id2 = o.string_id\n                WHERE o.kind = 'Quest'\n                  AND o.is_canonical = 1\n                  AND s.id1 BETWEEN 200 AND 600\n                  AND s.id1 = (\n                      SELECT MIN(s2.id1) FROM strings s2\n                      WHERE s2.id2 = o.string_id AND s2.id1 BETWEEN 200 AND 600\n                  )",
+      "type": "view"
+    },
+    {
+      "name": "quests",
+      "sql": "CREATE VIEW quests AS\n                SELECT * FROM objects WHERE kind = 'Quest' AND is_canonical = 1",
+      "type": "view"
+    }
+  ],
+  "version": null
+}

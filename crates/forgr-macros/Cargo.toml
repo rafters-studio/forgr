@@ -5,3 +5,6 @@ rust-version.workspace = true
 
 [lib]
 proc-macro = true
+
+[dependencies]
+forgr-schema = { path = "../forgr-schema" }
