@@ -15,7 +15,7 @@ forgr::schema!("schema/schema.json");
 ```
 
 It reads the file with forgr-schema when the macro expands. For each table it
-emits a module with `Row`, `factory()`, `mock(n)` and `Overrides`, plus
-`empty_store()` and the test `forgr_sql_matches_schema`. Without the `fake`
-feature, `mock` is a stand-in whose error names the feature; forgr turns the
-feature on through its own `fake`.
+emits a module with `Row` and `factory()`, plus `empty_store()` and the test
+`forgr_sql_matches_schema`. With the `fake` feature it also emits `mock(n)` and
+`Overrides`; without it, `mock` is a stand-in whose error names the feature.
+forgr turns the feature on through its own `fake`.
