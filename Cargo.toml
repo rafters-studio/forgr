@@ -1,0 +1,14 @@
+[workspace]
+resolver = "3"
+members = ["crates/forgr-schema", "crates/forgr-macros", "crates/forgr"]
+exclude = ["crates/forgr/tests/fixtures"]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.89"
+
+[workspace.dependencies]
+rusqlite = { version = "0.41", features = ["bundled"] }
+rstest = "0.26"
+rstest-bdd = "0.6"
+rstest-bdd-macros = "0.6"

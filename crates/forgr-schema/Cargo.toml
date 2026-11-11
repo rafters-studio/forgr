@@ -1,0 +1,4 @@
+[package]
+name = "forgr-schema"
+edition.workspace = true
+rust-version.workspace = true
