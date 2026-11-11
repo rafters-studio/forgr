@@ -3,15 +3,17 @@
 
 use std::fmt::Write as _;
 
-use forgr_schema::{Column, Table};
+use forgr_schema::{Column, ForeignKey, Table};
 
+use crate::ident::ident;
 use crate::table::{Affinity, affinity, in_key};
 
-/// With fake, `mock(n)`, `Mock` and its `insert`; without, the stand-in `mock`.
+/// With fake, `mock(n)`, `Mock` and its `insert`, which builds a fresh parent
+/// per row for each required foreign key; without, the stand-in `mock`.
 /// Decided here at expansion by forgr-macros' own fake feature, which forgr's
 /// forwards to: a cfg in the generated code would read the calling crate's
 /// features instead (macro toy M6).
-pub(crate) fn emit(out: &mut String, table: &Table) {
+pub(crate) fn emit(out: &mut String, table: &Table, tables: &[Table]) {
     if !cfg!(feature = "fake") {
         out.push_str(
             "/// Needs forgr's `fake` feature.\n\
@@ -39,11 +41,12 @@ pub(crate) fn emit(out: &mut String, table: &Table) {
          ///\n\
          /// When the store refuses a row.\n\
          pub fn insert(self, store: &::forgr::store::Connection) -> ::forgr::insert::Result<::std::vec::Vec<Row>> {{\n\
-         ::forgr::fake::insert(store, {name:?}, COLUMNS, FILL, self.n)\n\
+         ::forgr::fake::insert(store, {name:?}, COLUMNS, FILL, self.n, {parents})\n\
          }}\n\
          }}\n\
          const FILL: &[::forgr::fake::Column] = &[",
         name = table.name,
+        parents = parents(table, tables),
     );
     for column in &table.columns {
         let _ = write!(
@@ -54,6 +57,77 @@ pub(crate) fn emit(out: &mut String, table: &Table) {
         );
     }
     out.push_str("];");
+}
+
+/// The per-row hook of a mock's insert: for each required foreign key to
+/// another table, one fresh parent mocked and the key set from its referenced
+/// columns. A foreign key to the table's own table gets no parent: the test
+/// sets it with Fixed.
+fn parents(table: &Table, tables: &[Table]) -> String {
+    let mut body = String::new();
+    for fk in &table.foreign_keys {
+        if fk.table.eq_ignore_ascii_case(&table.name) {
+            continue;
+        }
+        let Some(parent) = tables
+            .iter()
+            .find(|t| t.name.eq_ignore_ascii_case(&fk.table))
+        else {
+            continue;
+        };
+        let Some(pairs) = pairs(table, parent, fk) else {
+            continue;
+        };
+        if !pairs
+            .iter()
+            .any(|(child, _)| child.not_null || in_key(table, child))
+        {
+            continue;
+        }
+        let _ = write!(
+            body,
+            "for parent in super::{}::mock(1).insert(store)? {{",
+            parent.name
+        );
+        for (child, referenced) in pairs {
+            let _ = write!(
+                body,
+                "set = ::forgr::insert::put(set, {:?}, ::forgr::value::Value::from(parent.{}));",
+                child.name,
+                ident(&referenced.name)
+            );
+        }
+        body.push('}');
+    }
+    if body.is_empty() {
+        "::core::result::Result::Ok".to_owned()
+    } else {
+        format!("|mut set| {{ {body} ::core::result::Result::Ok(set) }}")
+    }
+}
+
+/// Each column of `fk` in `table` and the column of `parent` it references, a
+/// key that names no column referencing the parent's primary key; names
+/// matched without regard to case. `None` when one does not resolve.
+fn pairs<'a>(
+    table: &'a Table,
+    parent: &'a Table,
+    fk: &ForeignKey,
+) -> Option<Vec<(&'a Column, &'a Column)>> {
+    let find =
+        |t: &'a Table, name: &str| t.columns.iter().find(|c| c.name.eq_ignore_ascii_case(name));
+    fk.columns
+        .iter()
+        .zip(&fk.references)
+        .enumerate()
+        .map(|(at, (from, to))| {
+            let to = match to {
+                Some(to) => to.as_str(),
+                None => parent.primary_key.as_ref()?.columns.get(at)?.as_str(),
+            };
+            Some((find(table, from)?, find(parent, to)?))
+        })
+        .collect()
 }
 
 /// What a mock writes to `column`: a nullable foreign key NULL, a TEXT key a

@@ -48,3 +48,9 @@ Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORG
     Given the empty test store for the macro toy's schema.json fixture, where events.source is a nullable foreign key
     When the test inserts events::mock(8) with no override for source
     Then every events row's source is NULL
+
+  @criterion-01a1c93d-9750-70f0-959d-b47c82bfe611
+  Scenario: a mock builds parents for a composite foreign key
+    Given the empty test store for the macro toy's schema.json fixture, where note_tags has the required composite foreign key (owner, name) to tags
+    When the test inserts note_tags::mock(8)
+    Then the store holds 8 tags rows and no foreign-key violations

@@ -38,6 +38,7 @@ struct Called {
     build: Slot<std::process::Output>,
     notes: Slot<Vec<macro_toy::notes::Row>>,
     events: Slot<Vec<macro_toy::events::Row>>,
+    styles: Slot<Vec<kessel::combat_styles::Row>>,
 }
 
 #[fixture]
@@ -760,6 +761,92 @@ fn sources_null(called: &Called) -> Result<(), String> {
         Ok(())
     } else {
         Err(format!("the events sources are {sources:?}"))
+    }
+}
+
+#[when("the test inserts combat_styles::mock(8)")]
+fn mock_eight_styles(called: &Called) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    let rows = kessel::combat_styles::mock(8)
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.styles.set(rows);
+    called.store.set(store);
+    Ok(())
+}
+
+/// The value of `sql`, a count, over the scenario's store.
+fn count(called: &Called, sql: &str) -> Result<i64, String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    let n = store
+        .query_row(sql, [], |r| r.get(0))
+        .map_err(|err| format!("{sql}: {err}"));
+    called.store.set(store);
+    n
+}
+
+#[then("the store holds 8 combat_styles rows")]
+fn holds_eight_styles(called: &Called) -> Result<(), String> {
+    match count(called, "SELECT count(*) FROM combat_styles")? {
+        8 => Ok(()),
+        n => Err(format!("the store holds {n} combat_styles rows")),
+    }
+}
+
+#[then("insert returns 8 combat_styles rows, each with its combat_style_id")]
+fn returns_eight_styles(called: &Called) -> Result<(), String> {
+    let rows = called.styles.take().ok_or("no mock was inserted")?;
+    let store = called.store.take().ok_or("no store was taken")?;
+    let mut held: Vec<String> = store
+        .prepare("SELECT combat_style_id FROM combat_styles")
+        .and_then(|mut stmt| stmt.query_map([], |r| r.get(0))?.collect())
+        .map_err(|err| err.to_string())?;
+    let mut returned: Vec<String> = rows.iter().map(|r| r.combat_style_id.clone()).collect();
+    held.sort();
+    returned.sort();
+    if rows.len() == 8 && returned == held {
+        Ok(())
+    } else {
+        Err(format!(
+            "insert returned the ids {returned:?}; the store holds {held:?}"
+        ))
+    }
+}
+
+#[given(
+    "the empty test store for the macro toy's schema.json fixture, where note_tags has the required composite foreign key (owner, name) to tags"
+)]
+fn note_tags_composite_key(called: &Called) -> Result<(), String> {
+    macro_store_where(
+        called,
+        "SELECT group_concat(k.\"from\" || '>' || k.\"to\" || ' ' || c.\"notnull\", ', ') \
+         FROM pragma_foreign_key_list('note_tags') k \
+         JOIN pragma_table_info('note_tags') c ON c.name = k.\"from\" \
+         WHERE k.\"table\" = 'tags'",
+        "owner>owner 1, name>name 1",
+    )
+}
+
+#[when("the test inserts note_tags::mock(8)")]
+fn mock_eight_note_tags(called: &Called) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    macro_toy::note_tags::mock(8)
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.store.set(store);
+    Ok(())
+}
+
+#[then("the store holds 8 tags rows and no foreign-key violations")]
+fn eight_tags_no_violations(called: &Called) -> Result<(), String> {
+    let tags = count(called, "SELECT count(*) FROM tags")?;
+    let violations = count(called, "SELECT count(*) FROM pragma_foreign_key_check")?;
+    if tags == 8 && violations == 0 {
+        Ok(())
+    } else {
+        Err(format!(
+            "the store holds {tags} tags rows and {violations} foreign-key violations"
+        ))
     }
 }
 
