@@ -1,5 +1,5 @@
 # Generated from the legion requirement. Do not hand-edit this file.
-Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORGR-002)
+Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORGR-002, FR-FORGR-004)
 
   @criterion-01a1c93d-7ee8-7711-a173-c91cfe78b52b
   Scenario: forgr leaves schema.json as it found it
@@ -12,3 +12,33 @@ Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORG
     Given an owning crate that calls schema! over kessel's schema.json fixture
     When its tests name the generated modules
     Then they can name a combat_styles module and an objects module
+
+  @criterion-01a1c93d-7ee8-7711-a173-c92ee772b411
+  Scenario: forgr needs no database file
+    Given a crate that calls schema! over the macro toy's schema.json fixture and has no database file
+    When a test inserts a notes factory with id n1, owner ana, updated_at t and kind memo into the empty test store
+    Then insert returns the notes row with owner ana
+
+  @criterion-01a1c93d-967c-7370-9edc-177c0288cbf5
+  Scenario: a factory sets columns by name
+    Given the empty test store for kessel's schema.json fixture, holding an objects row with game_id g1, stable_id s, payload_hash p, guid x, fqn class.pc.advanced.sage, kind class and json {}
+    When the test inserts a combat_styles factory setting combat_style_id g1, fqn class.pc.advanced.sage, fqn_segment force_wizard, display_segment sage, faction republic and attack_type force
+    Then the store holds a combat_styles row with those values
+
+  @criterion-01a1c93d-967c-7370-9edc-1785b8cb3836
+  Scenario: a keyword column gets a raw identifier
+    Given the empty test store for the edge schema.json fixture, where kinds has a TEXT NOT NULL column named type
+    When the test inserts a kinds factory setting id and setting type with r#type
+    Then the test compiles and the inserted kinds row carries the type it was given
+
+  @criterion-01a1c93d-967c-7370-9edc-17b9705d5d76
+  Scenario: a factory requires every primary-key column
+    Given kessel's schema.json fixture, where the primary key of combat_styles is combat_style_id
+    When the test inserts a combat_styles factory with only fqn set
+    Then the build fails with an error naming combat_styles::col::combat_style_id
+
+  @criterion-01a1c93d-967c-7370-9edc-17eaf2e9f952
+  Scenario: a setter's type follows the column's SQLite type
+    Given the empty test store for the macro toy's schema.json fixture, where events.status is INTEGER and events.body is TEXT
+    When the test inserts an events factory with id 1, ty 3, status 0 and body root
+    Then the test compiles and the inserted row carries status 0 and body root
