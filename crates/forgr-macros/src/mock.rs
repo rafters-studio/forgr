@@ -5,7 +5,7 @@ use std::fmt::Write as _;
 
 use forgr_schema::{Column, Table};
 
-use crate::table::{in_key, rust_type};
+use crate::table::{Affinity, affinity, in_key};
 
 /// With fake, `mock(n)`, `Mock` and its `insert`; without, the stand-in `mock`.
 /// Decided here at expansion by forgr-macros' own fake feature, which forgr's
@@ -60,13 +60,7 @@ pub(crate) fn emit(out: &mut String, table: &Table) {
 /// UUIDv7, an INTEGER key a positive integer, a column with a default its
 /// default, any other a value by type, from its CHECK list when it has one.
 fn fill(table: &Table, column: &Column) -> String {
-    let ty = match rust_type(column) {
-        "i64" => "Integer",
-        "::std::string::String" => "Text",
-        "::std::vec::Vec<u8>" => "Blob",
-        "f64" => "Real",
-        _ => "Numeric",
-    };
+    let affinity = affinity(column);
     let key = in_key(table, column);
     let nullable = !column.not_null && !key;
     let foreign = table
@@ -75,9 +69,9 @@ fn fill(table: &Table, column: &Column) -> String {
         .any(|fk| fk.columns.contains(&column.name));
     if nullable && foreign {
         "::forgr::fake::Fill::Null".to_owned()
-    } else if key && ty == "Text" {
+    } else if key && affinity == Affinity::Text {
         "::forgr::fake::Fill::Uuid7".to_owned()
-    } else if key && ty == "Integer" {
+    } else if key && affinity == Affinity::Integer {
         "::forgr::fake::Fill::PositiveInteger".to_owned()
     } else if column.default.is_some() && !key {
         "::forgr::fake::Fill::Default".to_owned()
@@ -86,6 +80,13 @@ fn fill(table: &Table, column: &Column) -> String {
             || "::core::option::Option::None".to_owned(),
             |values| format!("::core::option::Option::Some(&{values:?})"),
         );
+        let ty = match affinity {
+            Affinity::Integer => "Integer",
+            Affinity::Text => "Text",
+            Affinity::Blob => "Blob",
+            Affinity::Real => "Real",
+            Affinity::Numeric => "Numeric",
+        };
         format!(
             "::forgr::fake::Fill::Value {{ ty: ::forgr::fake::Type::{ty}, nullable: {nullable}, list: {list} }}"
         )

@@ -6,27 +6,49 @@ use forgr_schema::{Column, Table};
 
 use crate::ident::ident;
 
-/// The Rust type of a column's values, by SQLite's affinity rules for its
-/// declared type: INTEGER, TEXT, BLOB (or no type) and REAL; any other type has
-/// NUMERIC affinity and takes any SQLite value.
-pub(crate) fn rust_type(column: &Column) -> &'static str {
+/// A column's SQLite type affinity, by SQLite's rules for its declared type:
+/// INTEGER, TEXT, BLOB (or no type) and REAL; any other type has NUMERIC
+/// affinity and takes any SQLite value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Affinity {
+    Integer,
+    Text,
+    Blob,
+    Real,
+    Numeric,
+}
+
+/// The column's affinity.
+pub(crate) fn affinity(column: &Column) -> Affinity {
     let declared = column.sql_type.to_ascii_uppercase();
     if declared.contains("INT") {
-        "i64"
+        Affinity::Integer
     } else if ["CHAR", "CLOB", "TEXT"]
         .iter()
         .any(|t| declared.contains(t))
     {
-        "::std::string::String"
+        Affinity::Text
     } else if declared.is_empty() || declared.contains("BLOB") {
-        "::std::vec::Vec<u8>"
+        Affinity::Blob
     } else if ["REAL", "FLOA", "DOUB"]
         .iter()
         .any(|t| declared.contains(t))
     {
-        "f64"
+        Affinity::Real
     } else {
-        "::forgr::value::Value"
+        Affinity::Numeric
+    }
+}
+
+/// The Rust type of a column's values, by its affinity; a NUMERIC column
+/// takes any SQLite value.
+pub(crate) fn rust_type(column: &Column) -> &'static str {
+    match affinity(column) {
+        Affinity::Integer => "i64",
+        Affinity::Text => "::std::string::String",
+        Affinity::Blob => "::std::vec::Vec<u8>",
+        Affinity::Real => "f64",
+        Affinity::Numeric => "::forgr::value::Value",
     }
 }
 
