@@ -424,7 +424,7 @@ fn builds_only_fqn(called: &Called) -> Result<(), String> {
     }
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let output = std::process::Command::new(cargo)
-        .args(["check", "--offline", "--manifest-path"])
+        .args(["check", "--offline", "--color", "never", "--manifest-path"])
         .arg(root.join("Cargo.toml"))
         .arg("--target-dir")
         .arg(root.join("target"))
