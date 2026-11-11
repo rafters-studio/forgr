@@ -20,14 +20,34 @@ It is for Rust developers, and the agents that write tests in their repos, who
 test code against SQLite. It does not run migrations, move rows between
 databases, or write event files; those belong to migratr, smugglr and the app.
 
+## Install
+
+In the crate that owns the store, forgr is an optional dependency, a feature
+turns it on together with `forgr/fake` for mocks, and a dev-dependency covers
+that crate's own tests:
+
+```toml
+[features]
+testing = ["dep:forgr", "forgr/fake"]
+
+[dependencies]
+forgr = { version = "0.1", optional = true }
+
+[dev-dependencies]
+forgr = { version = "0.1", features = ["fake"] }
+```
+
+The feature name is yours; `testing` is the name the fixture below uses. Other
+crates need no forgr dependency of their own.
+
 ## Setup
 
 One `forgr::schema!` call, in the library of the crate that owns the store,
 inside a module behind a cargo feature. forgr is an optional dependency that
 feature turns on, and a dev-dependency for that crate's own tests. Every code
 block in this section is from `crates/forgr/tests/fixtures/workspace/`, a
-two-crate workspace that `w_rerun.sh` builds and tests against the forgr in this
-repository.
+two-crate workspace that `w_rerun.sh` builds and tests. The fixture uses a path
+dependency on the forgr in this repository in place of the version above.
 
 The owning crate, `store/Cargo.toml`:
 
@@ -81,9 +101,6 @@ root beside `use forgr::fake::Override;`, it fails with `E0252`, the name
 Without `fake`, calling `mock` is a compile error that names the feature:
 `mocks need forgr's `fake` feature`. forgr's `rusqlite` is the one the
 workspace builds with; `cargo tree -i rusqlite` shows one `rusqlite v0.41.1`.
-
-forgr is not published. The fixture points at the repository by path, and so
-does a project that uses it today.
 
 ## The empty test store
 
