@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 description = "The schema! macro for forgr, re-exported by forgr."
 license.workspace = true
+readme = "README.md"
 repository.workspace = true
 rust-version.workspace = true
 
