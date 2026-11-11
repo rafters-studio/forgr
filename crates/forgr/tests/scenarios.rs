@@ -280,6 +280,18 @@ fn sage(store: &rusqlite::Connection) -> rusqlite::Result<kessel::objects::Row> 
 #[given(
     "the empty test store for kessel's schema.json fixture, holding an objects row with game_id g1, stable_id s, payload_hash p, guid x, fqn class.pc.advanced.sage, kind class and json {{}}"
 )]
+fn store_with_object_given(called: &Called) -> Result<(), String> {
+    store_with_object(called)
+}
+
+#[given(
+    "the empty test store for kessel's schema.json fixture, holding an objects row with game_id g1, stable_id s, payload_hash p, guid x, fqn class.pc.advanced.sage, kind class and json {{}} inserted by a factory"
+)]
+fn store_with_object_by_factory(called: &Called) -> Result<(), String> {
+    store_with_object(called)
+}
+
+/// The kessel store holding the objects row `sage` inserts by its factory.
 fn store_with_object(called: &Called) -> Result<(), String> {
     let store = kessel::empty_store();
     sage(&store).map_err(|err| err.to_string())?;
@@ -299,6 +311,18 @@ const STYLE: [(&str, &str); 6] = [
 #[when(
     "the test inserts a combat_styles factory setting combat_style_id g1, fqn class.pc.advanced.sage, fqn_segment force_wizard, display_segment sage, faction republic and attack_type force"
 )]
+fn inserts_style_setting(called: &Called) -> Result<(), String> {
+    inserts_style(called)
+}
+
+#[when(
+    "the test inserts a combat_styles factory with combat_style_id g1, fqn class.pc.advanced.sage, fqn_segment force_wizard, display_segment sage, faction republic and attack_type force"
+)]
+fn inserts_style_with(called: &Called) -> Result<(), String> {
+    inserts_style(called)
+}
+
+/// Inserts the combat_styles factory of the scenarios, every required column set.
 fn inserts_style(called: &Called) -> Result<(), String> {
     let store = called.store.take().ok_or("no store was taken")?;
     kessel::combat_styles::factory()
@@ -399,9 +423,15 @@ pub fn only_fqn() -> forgr::insert::Result<store::combat_styles::Row> {
 }
 "#;
 
-#[when("the test inserts a combat_styles factory with only fqn set")]
-fn builds_only_fqn(called: &Called) -> Result<(), String> {
-    let root = std::path::Path::new(env!("CARGO_TARGET_TMPDIR")).join("only-fqn");
+/// Checks a crate named `name` that depends on forgr, with `features`, and
+/// holds `lib` as its src/lib.rs and `schema` as its schema.json.
+fn check_crate(
+    name: &str,
+    features: &str,
+    lib: &str,
+    schema: &str,
+) -> Result<std::process::Output, String> {
+    let root = std::path::Path::new(env!("CARGO_TARGET_TMPDIR")).join(name);
     let src = root.join("src");
     std::fs::create_dir_all(&src).map_err(|err| format!("{}: {err}", src.display()))?;
     let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -409,16 +439,13 @@ fn builds_only_fqn(called: &Called) -> Result<(), String> {
         (
             root.join("Cargo.toml"),
             format!(
-                "[package]\nname = \"only-fqn\"\nedition = \"2024\"\n\n[workspace]\n\n\
-                 [dependencies]\nforgr = {{ path = '{}' }}\n",
+                "[package]\nname = \"{name}\"\nedition = \"2024\"\n\n[workspace]\n\n\
+                 [dependencies]\nforgr = {{ path = '{}', features = [{features}] }}\n",
                 manifest.display()
             ),
         ),
-        (root.join("src/lib.rs"), ONLY_FQN.to_owned()),
-        (
-            root.join("schema.json"),
-            include_str!("fixtures/kessel/schema.json").to_owned(),
-        ),
+        (root.join("src/lib.rs"), lib.to_owned()),
+        (root.join("schema.json"), schema.to_owned()),
         (
             root.join("Cargo.lock"),
             include_str!("../../../Cargo.lock").to_owned(),
@@ -428,15 +455,24 @@ fn builds_only_fqn(called: &Called) -> Result<(), String> {
         std::fs::write(&path, text).map_err(|err| format!("{}: {err}", path.display()))?;
     }
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
-    let output = std::process::Command::new(cargo)
+    std::process::Command::new(cargo)
         .args(["check", "--offline", "--color", "never", "--manifest-path"])
         .arg(root.join("Cargo.toml"))
         .arg("--target-dir")
         .arg(root.join("target"))
         .env_remove("CARGO_TARGET_DIR")
         .output()
-        .map_err(|err| format!("could not run cargo: {err}"))?;
-    called.build.set(output);
+        .map_err(|err| format!("could not run cargo: {err}"))
+}
+
+#[when("the test inserts a combat_styles factory with only fqn set")]
+fn builds_only_fqn(called: &Called) -> Result<(), String> {
+    called.build.set(check_crate(
+        "only-fqn",
+        "",
+        ONLY_FQN,
+        include_str!("fixtures/kessel/schema.json"),
+    )?);
     Ok(())
 }
 
@@ -489,6 +525,7 @@ fn inserts_event(called: &Called) -> Result<(), String> {
         .insert(&store)
         .map_err(|err| err.to_string())?;
     called.event.set(event);
+    called.store.set(store);
     Ok(())
 }
 
@@ -1090,3 +1127,129 @@ fn parents_root(called: &Called) -> Result<(), String> {
 }
 
 scenarios!("tests", fixtures = [called: Called]);
+
+#[then("the combat_styles row is written and refers to the objects row g1")]
+fn style_refers_to_object(called: &Called) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    let referring = count_in(
+        &store,
+        "SELECT count(*) FROM combat_styles c JOIN objects o ON o.game_id = c.combat_style_id \
+         WHERE c.combat_style_id = 'g1'",
+    )?;
+    let violations = count_in(&store, "SELECT count(*) FROM pragma_foreign_key_check")?;
+    if referring == 1 && violations == 0 {
+        Ok(())
+    } else {
+        Err(format!(
+            "{referring} combat_styles rows refer to the objects row g1, \
+             with {violations} foreign-key violations"
+        ))
+    }
+}
+
+/// The one integer `sql` over `store` returns.
+fn count_in(store: &rusqlite::Connection, sql: &str) -> Result<i64, String> {
+    store
+        .query_row(sql, [], |r| r.get(0))
+        .map_err(|err| format!("{sql}: {err}"))
+}
+
+#[then("the store holds that events row")]
+fn holds_event(called: &Called) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    let event = called.event.take().ok_or("no events row was inserted")?;
+    let held: Vec<(i64, i64, i64, String)> = store
+        .prepare("SELECT id, ty, status, body FROM events")
+        .and_then(|mut stmt| {
+            stmt.query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?)))?
+                .collect()
+        })
+        .map_err(|err| err.to_string())?;
+    let want = (1, 3, 0, "root".to_owned());
+    let returned = (event.id, event.ty, event.status, event.body.clone());
+    if held == [want.clone()] && returned == want {
+        Ok(())
+    } else {
+        Err(format!(
+            "the store holds {held:?}; insert returned {event:?}"
+        ))
+    }
+}
+
+/// The macro toy's store, once it holds notes_fts as an FTS5 virtual table.
+fn holds_notes_fts() -> Result<(), String> {
+    let sql: String = macro_toy::empty_store()
+        .query_row(
+            "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'notes_fts'",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(|err| format!("the macro toy's schema.json has no notes_fts: {err}"))?;
+    if sql.to_ascii_lowercase().contains("using fts5") {
+        Ok(())
+    } else {
+        Err(format!("notes_fts is not an FTS5 table: {sql}"))
+    }
+}
+
+#[given("the macro toy's schema.json fixture, which holds the FTS5 table notes_fts")]
+fn macro_toy_with_fts() -> Result<(), String> {
+    holds_notes_fts()
+}
+
+#[given(
+    "the macro toy's schema.json fixture, which holds the FTS5 table notes_fts, and forgr's fake feature on"
+)]
+fn macro_toy_with_fts_and_fake() -> Result<(), String> {
+    // The crate the When builds depends on forgr with its fake feature.
+    holds_notes_fts()
+}
+
+/// A crate over the macro toy's schema.json whose code calls `call` on notes_fts.
+fn calls_notes_fts(name: &str, features: &str, call: &str) -> Result<std::process::Output, String> {
+    let lib = format!(
+        "mod store {{\n    forgr::schema!(\"schema.json\");\n}}\n\n\
+         pub fn calls_notes_fts() {{\n    let _ = store::notes_fts::{call};\n}}\n"
+    );
+    check_crate(
+        name,
+        features,
+        &lib,
+        include_str!("fixtures/macro/schema.json"),
+    )
+}
+
+#[when("a test calls notes_fts::factory()")]
+fn calls_fts_factory(called: &Called) -> Result<(), String> {
+    called
+        .build
+        .set(calls_notes_fts("fts-factory", "", "factory()")?);
+    Ok(())
+}
+
+#[when("a test calls notes_fts::mock(8)")]
+fn calls_fts_mock(called: &Called) -> Result<(), String> {
+    called
+        .build
+        .set(calls_notes_fts("fts-mock", "\"fake\"", "mock(8)")?);
+    Ok(())
+}
+
+#[then("the test fails to compile")]
+fn fails_to_compile(called: &Called) -> Result<(), String> {
+    let output = called.build.take().ok_or("nothing was built")?;
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    // Failing for notes_fts, not for some other reason the crate could fail.
+    let for_fts = stderr
+        .lines()
+        .any(|line| line.starts_with("error[") && line.contains("`notes_fts`"));
+    if output.status.success() {
+        Err("the test compiled".to_owned())
+    } else if for_fts {
+        Ok(())
+    } else {
+        Err(format!(
+            "the test failed to compile, but not for notes_fts:\n{stderr}"
+        ))
+    }
+}

@@ -174,8 +174,10 @@ fn pairs<'a>(
 }
 
 /// What a mock writes to `column`: a nullable foreign key NULL, a TEXT key a
-/// UUIDv7, an INTEGER key a positive integer, a column with a default its
-/// default, any other a value by type, from its CHECK list when it has one.
+/// UUIDv7 unless it has a CHECK list, an INTEGER key a positive integer, a
+/// column with a default its default, any other a value by type, from its
+/// CHECK list when it has one (the kessel toy reads the list first, so a TEXT
+/// key with a list, kessel's gsf_requisition_costs.cost_kind, takes the list).
 fn fill(table: &Table, column: &Column) -> String {
     let affinity = affinity(column);
     let key = in_key(table, column);
@@ -186,7 +188,7 @@ fn fill(table: &Table, column: &Column) -> String {
         .any(|fk| fk.columns.contains(&column.name));
     if nullable && foreign {
         "::forgr::fake::Fill::Null".to_owned()
-    } else if key && affinity == Affinity::Text {
+    } else if key && affinity == Affinity::Text && column.check_list.is_none() {
         "::forgr::fake::Fill::Uuid7".to_owned()
     } else if key && affinity == Affinity::Integer {
         "::forgr::fake::Fill::PositiveInteger".to_owned()
@@ -207,5 +209,26 @@ fn fill(table: &Table, column: &Column) -> String {
         format!(
             "::forgr::fake::Fill::Value {{ ty: ::forgr::fake::Type::{ty}, nullable: {nullable}, list: {list} }}"
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// kessel's gsf_requisition_costs.cost_kind: a TEXT key column with a
+    /// CHECK list takes the list, not a UUIDv7 the CHECK would refuse.
+    #[test]
+    fn a_text_key_with_a_check_list_takes_the_list() {
+        let text = r#"{"version": null, "objects": [{"type": "table", "name": "costs", "sql": "CREATE TABLE costs (kind TEXT NOT NULL CHECK (kind IN ('unlock', 'upgrade')), id TEXT NOT NULL, PRIMARY KEY (id, kind))"}]}"#;
+        let schema = forgr_schema::Schema::read(text).unwrap();
+        let table = &schema.tables[0];
+        let fills: Vec<String> = table.columns.iter().map(|c| fill(table, c)).collect();
+        assert!(
+            fills[0].contains(r#"list: ::core::option::Option::Some(&["unlock", "upgrade"])"#),
+            "{}",
+            fills[0]
+        );
+        assert_eq!(fills[1], "::forgr::fake::Fill::Uuid7");
     }
 }
