@@ -46,7 +46,7 @@ fn expand(input: TokenStream) -> Result<TokenStream, String> {
         let _ = write!(out, "pub mod {} {{", table.name);
         table::emit(&mut out, table);
         factory::emit(&mut out, table);
-        mock::emit(&mut out, table);
+        mock::emit(&mut out, table, &schema.tables);
         out.push('}');
     }
     out.parse()

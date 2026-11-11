@@ -21,8 +21,9 @@
 /// written, keys included. A TEXT primary key gets a UUIDv7 and an INTEGER one a
 /// random positive integer; a column with a default is left to it, a CHECK
 /// (col IN (...)) column takes a listed value, a nullable column is NULL in
-/// some rows and a nullable foreign key is NULL. Without the feature, calling
-/// `mock` is a compile error naming it:
+/// some rows and a nullable foreign key is NULL. A required foreign key to
+/// another table gets a fresh parent per row, mocked the same way. Without the
+/// feature, calling `mock` is a compile error naming it:
 ///
 /// ```text
 /// error[E0277]: mocks need forgr's `fake` feature

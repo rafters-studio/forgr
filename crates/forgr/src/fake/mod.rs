@@ -5,6 +5,7 @@ mod generate;
 use rusqlite::Connection;
 
 use crate::insert::{FromRow, Result};
+use crate::value::Value;
 
 /// A column's SQLite type affinity, which picks the kind of value fake makes.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -44,8 +45,10 @@ pub struct Column {
     pub fill: Fill,
 }
 
-/// Writes `n` rows of `table`, each column filled as `fill` says, and returns
-/// the rows as written, keys included; `n` of 0 writes and returns none.
+/// Writes `n` rows of `table`, each column filled as `fill` says and then
+/// passed to `parents`, which builds the row's parents and sets its foreign
+/// keys to them, and returns the rows as written, keys included; `n` of 0
+/// writes and returns none.
 ///
 /// # Errors
 ///
@@ -56,9 +59,13 @@ pub fn insert<R: FromRow>(
     columns: &[&str],
     fill: &[Column],
     n: usize,
+    mut parents: impl FnMut(Vec<(&'static str, Value)>) -> Result<Vec<(&'static str, Value)>>,
 ) -> Result<Vec<R>> {
     let mut rng = ::fake::rand::rng();
     (0..n)
-        .map(|_| crate::insert::insert(conn, table, columns, generate::row(&mut rng, fill)))
+        .map(|_| {
+            let set = parents(generate::row(&mut rng, fill))?;
+            crate::insert::insert(conn, table, columns, set)
+        })
         .collect()
 }

@@ -34,7 +34,13 @@ pub(super) fn row<R: Rng + ?Sized>(rng: &mut R, fill: &[Column]) -> Vec<(&'stati
 fn by_type<R: Rng + ?Sized>(rng: &mut R, ty: Type) -> Value {
     match ty {
         Type::Integer | Type::Numeric => Value::Integer(rng.random()),
-        Type::Text => Value::Text(Word().fake_with_rng(rng)),
+        // A word and a random suffix: close to unique, so a UNIQUE column or
+        // index takes every row of a mock.
+        Type::Text => Value::Text(format!(
+            "{}-{:08x}",
+            Word().fake_with_rng::<&str, _>(rng),
+            rng.random::<u32>()
+        )),
         Type::Real => Value::Real(rng.random()),
         Type::Blob => {
             let len = rng.random_range(0..16);
@@ -76,6 +82,18 @@ mod tests {
         );
         assert!(parts[2].starts_with('7'));
         assert!(parts[3].starts_with(['8', '9', 'a', 'b']));
+    }
+
+    #[test]
+    fn text_values_do_not_repeat() {
+        let mut rng = fake::rand::rng();
+        let values: std::collections::HashSet<String> = (0..1000)
+            .map(|_| match by_type(&mut rng, Type::Text) {
+                Value::Text(v) => v,
+                other => panic!("not text: {other:?}"),
+            })
+            .collect();
+        assert_eq!(values.len(), 1000);
     }
 
     #[test]
