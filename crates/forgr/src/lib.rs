@@ -10,6 +10,7 @@
 //!
 //! The README has the rest, with output pasted from runs:
 //!
+//! - [Install](https://github.com/rafters-studio/forgr#install)
 //! - [Setup](https://github.com/rafters-studio/forgr#setup): the owning crate,
 //!   the feature, and the crates that test through it.
 //! - [The empty test store](https://github.com/rafters-studio/forgr#the-empty-test-store)

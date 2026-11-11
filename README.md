@@ -99,7 +99,7 @@ root beside `use forgr::fake::Override;`, it fails with `E0252`, the name
 `Override` is defined multiple times. The module around the call avoids that.
 
 Without `fake`, calling `mock` is a compile error that names the feature:
-`mocks need forgr's `fake` feature`. forgr's `rusqlite` is the one the
+``mocks need forgr's `fake` feature``. forgr's `rusqlite` is the one the
 workspace builds with; `cargo tree -i rusqlite` shows one `rusqlite v0.41.1`.
 
 ## The empty test store
@@ -142,7 +142,7 @@ the scenario that inserts a note:
 ```
 
 A NOT NULL column with no default, and every primary-key column, left unset is
-a compile error. The next section shows it.
+a compile error. [An unset required column](#an-unset-required-column) shows it.
 
 ## A mock
 
@@ -287,7 +287,7 @@ note: required by a bound in `combat_styles::Factory::<R0, R1, R2, R3, R4, R5>::
 Rename `notes.owner` to `author` in the workspace fixture's
 `store/schema/schema.json` and touch nothing else. `schema!` tracks the file, so
 `cargo clippy --workspace --tests` fails in the other crate's tests. The three
-errors, less two `note:` lines that name a temporary file:
+errors, less two `note:` lines, one naming a temporary file:
 
 ```text
 error[E0599]: no method named `owner` found for struct `store::forgr::notes::Factory<R0, R1, R2, R3>` in the current scope
