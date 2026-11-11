@@ -321,9 +321,11 @@ name = "forgr"
 version = "0.0.0"
 dependencies = [
  "forgr-macros",
+ "forgr-schema",
  "rstest",
  "rstest-bdd",
  "rstest-bdd-macros",
+ "rusqlite",
 ]
 
 [[package]]

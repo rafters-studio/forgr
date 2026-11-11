@@ -24,6 +24,8 @@ const MACRO_TOY: &str = "tests/fixtures/macro/schema.json";
 struct Called {
     built: Slot<&'static str>,
     named: Slot<Vec<&'static str>>,
+    store: Slot<rusqlite::Connection>,
+    written: Slot<rusqlite::Result<usize>>,
 }
 
 #[fixture]
@@ -91,6 +93,98 @@ fn named(called: &Called) -> Result<(), String> {
         Ok(())
     } else {
         Err(format!("the tests named {named:?}"))
+    }
+}
+
+const KESSEL_TABLES: [&str; 2] = ["combat_styles", "objects"];
+
+#[given("kessel's schema.json fixture")]
+fn kessel_fixture() {
+    // The module `kessel` above holds the call over it.
+}
+
+#[when("a test takes the empty test store")]
+fn takes_store(called: &Called) {
+    called.store.set(kessel::empty_store());
+}
+
+#[then("the store has the tables combat_styles and objects")]
+fn has_tables(called: &Called) -> Result<(), String> {
+    let conn = called.store.take().ok_or("no store was taken")?;
+    for table in KESSEL_TABLES {
+        let n: i64 = conn
+            .query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type = 'table' AND name = ?1",
+                [table],
+                |r| r.get(0),
+            )
+            .map_err(|err| format!("{table}: {err}"))?;
+        if n != 1 {
+            return Err(format!("the store has no table {table}"));
+        }
+    }
+    Ok(())
+}
+
+#[then("the combat_styles and objects tables have no rows")]
+fn no_rows(called: &Called) -> Result<(), String> {
+    let conn = called.store.take().ok_or("no store was taken")?;
+    for table in KESSEL_TABLES {
+        let n: i64 = conn
+            .query_row(&format!("SELECT count(*) FROM {table}"), [], |r| r.get(0))
+            .map_err(|err| format!("{table}: {err}"))?;
+        if n != 0 {
+            return Err(format!("{table} has {n} rows"));
+        }
+    }
+    Ok(())
+}
+
+#[given(
+    "the empty test store for kessel's schema.json fixture, where combat_styles has a foreign key to objects"
+)]
+fn store_with_foreign_key(called: &Called) -> Result<(), String> {
+    let conn = kessel::empty_store();
+    let n: i64 = conn
+        .query_row(
+            "SELECT count(*) FROM pragma_foreign_key_list('combat_styles') \
+             WHERE \"table\" = 'objects' AND \"from\" = 'combat_style_id'",
+            [],
+            |r| r.get(0),
+        )
+        .map_err(|err| err.to_string())?;
+    if n != 1 {
+        return Err("combat_styles has no foreign key to objects".to_owned());
+    }
+    called.store.set(conn);
+    Ok(())
+}
+
+#[when("the test writes a combat_styles row whose foreign key names no objects row")]
+fn writes_orphan(called: &Called) -> Result<(), String> {
+    let conn = called.store.take().ok_or("no store was taken")?;
+    // Every NOT NULL column is set, so the foreign key is the only constraint the row breaks.
+    called.written.set(conn.execute(
+        "INSERT INTO combat_styles \
+         (combat_style_id, fqn, fqn_segment, display_segment, faction, attack_type) \
+         VALUES ('no-such-object', 'class.pc.advanced.sage', 'force_wizard', 'sage', 'republic', 'force')",
+        [],
+    ));
+    Ok(())
+}
+
+#[then("the store refuses the row")]
+fn refuses(called: &Called) -> Result<(), String> {
+    match called.written.take().ok_or("no row was written")? {
+        Err(rusqlite::Error::SqliteFailure(err, _))
+            if err.extended_code == rusqlite::ffi::SQLITE_CONSTRAINT_FOREIGNKEY =>
+        {
+            Ok(())
+        }
+        Err(err) => Err(format!(
+            "the row was refused, but not for its foreign key: {err}"
+        )),
+        Ok(n) => Err(format!("the store took the row ({n} written)")),
     }
 }
 

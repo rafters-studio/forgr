@@ -92,9 +92,34 @@ impl Schema {
     }
 }
 
+/// Replays a schema.json text into a fresh in-memory SQLite, by the same
+/// tables-first replay [`Schema::read`] reads, and returns that store.
+///
+/// # Errors
+///
+/// When the text is not in migratr's format, or an object's SQL does not replay.
+pub fn replay(text: &str) -> Result<rusqlite::Connection, Error> {
+    let file = file::parse(text).map_err(Error::Parse)?;
+    Ok(replay::replay(&file.objects)?.conn)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn replay_gives_the_store_with_the_tables() {
+        let conn = replay(file::tests::WRITER).unwrap();
+        let n: i64 = conn
+            .query_row(
+                "SELECT count(*) FROM sqlite_master WHERE type='table' AND name='notes'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(n, 1);
+        assert!(matches!(replay("{}"), Err(Error::Parse(_))));
+    }
 
     #[test]
     fn reads_composite_keys_and_foreign_keys() {
