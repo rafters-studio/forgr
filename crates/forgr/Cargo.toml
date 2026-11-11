@@ -3,6 +3,9 @@ name = "forgr"
 edition.workspace = true
 rust-version.workspace = true
 
+[dependencies]
+forgr-macros = { path = "../forgr-macros" }
+
 [dev-dependencies]
 rstest = { workspace = true }
 rstest-bdd = { workspace = true }
