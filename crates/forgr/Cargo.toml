@@ -1,11 +1,16 @@
 [package]
 name = "forgr"
+version.workspace = true
 edition.workspace = true
+description = "Test data from the schema.json an app already has."
+license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
+readme = "../../README.md"
 
 [dependencies]
-forgr-macros = { path = "../forgr-macros" }
-forgr-schema = { path = "../forgr-schema" }
+forgr-macros = { workspace = true }
+forgr-schema = { workspace = true }
 rusqlite = { workspace = true }
 fake = { workspace = true, optional = true }
 # The SQL check: reads the workspace's source at test time.

@@ -1,13 +1,17 @@
 [package]
 name = "forgr-macros"
+version.workspace = true
 edition.workspace = true
+description = "The schema! macro for forgr, re-exported by forgr."
+license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
 
 [lib]
 proc-macro = true
 
 [dependencies]
-forgr-schema = { path = "../forgr-schema" }
+forgr-schema = { workspace = true }
 
 [features]
 # Emit each table's mock; without it, a stand-in whose error names the feature.
