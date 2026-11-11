@@ -4,8 +4,13 @@ use std::fmt::Write as _;
 
 use proc_macro::{TokenStream, TokenTree};
 
+mod factory;
+mod ident;
+mod table;
+
 /// `schema!("<path>/schema.json")`, the path relative to the calling crate's
-/// manifest directory: one module per table of the schema.json and
+/// manifest directory: one module per table of the schema.json, each with its
+/// column markers, `Row` and `factory()`, and
 /// `empty_store()`, the empty test store. The file is read at expansion by
 /// forgr-schema and tracked by the `include_str!` `empty_store()` replays, so an
 /// edit to the file alone expands the call again.
@@ -36,7 +41,10 @@ fn expand(input: TokenStream) -> Result<TokenStream, String> {
          }}"
     );
     for table in &schema.tables {
-        let _ = write!(out, "pub mod {} {{}}", table.name);
+        let _ = write!(out, "pub mod {} {{", table.name);
+        table::emit(&mut out, table);
+        factory::emit(&mut out, table);
+        out.push('}');
     }
     out.parse()
         .map_err(|err| format!("schema! generated code that does not parse: {err}"))

@@ -1,0 +1,15 @@
+{
+  "version": null,
+  "objects": [
+    {
+      "type": "table",
+      "name": "kinds",
+      "sql": "CREATE TABLE kinds (id TEXT PRIMARY KEY, type TEXT NOT NULL)"
+    },
+    {
+      "type": "table",
+      "name": "nodes",
+      "sql": "CREATE TABLE nodes (id TEXT PRIMARY KEY, parent_id TEXT NOT NULL REFERENCES nodes(id))"
+    }
+  ]
+}
