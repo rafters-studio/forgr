@@ -9,8 +9,10 @@ use syn::visit::{self, Visit};
 
 use super::{Found, Held};
 
-/// First words of statements that read or write rows.
-const DML: [&str; 6] = ["SELECT", "INSERT", "UPDATE", "DELETE", "REPLACE", "WITH"];
+/// First words of statements that read or write rows, or read or set a pragma.
+const DML: [&str; 7] = [
+    "SELECT", "INSERT", "UPDATE", "DELETE", "REPLACE", "WITH", "PRAGMA",
+];
 /// First words of statements that change the schema.
 const DDL: [&str; 3] = ["CREATE", "ALTER", "DROP"];
 
@@ -90,7 +92,7 @@ fn relative(root: &Path, file: &Path) -> String {
 }
 
 /// The first word of `sql` past whitespace and comments, upper-cased, when it
-/// starts a statement that reads, writes or changes the schema.
+/// starts a statement that reads, writes, runs a pragma or changes the schema.
 fn keyword(sql: &str) -> Option<String> {
     let word: String = skip_comments(sql)
         .chars()
