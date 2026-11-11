@@ -17,12 +17,28 @@
 /// ```
 ///
 /// With forgr's `fake` feature, each table's module also has `mock(n)`: `n`
-/// rows filled by fake, written by `insert(&store)`, which returns them as
-/// written, keys included. A TEXT primary key gets a UUIDv7 and an INTEGER one a
+/// rows filled by fake, or a random number in a Rust range (`mock(3..32)` is 3
+/// to 31 rows), written by `insert(&store)`, which returns them as written,
+/// keys included. `mock(n).with(Overrides { .. })` sets what the mock writes to
+/// a column: each field of the table's `Overrides` is an `Override`, Fake by
+/// default, `Fixed(value)`, `Pick(list)` or `Each(closure)`, made per row from
+/// the closure's argument (its `row`, and `pick(list)`); `..Default::default()`
+/// leaves the rest Fake. `schema!` re-exports `Override` beside the table
+/// modules:
+///
+/// ```text
+/// events::mock(12).with(events::Overrides {
+///     status: Pick(vec![-1, 0, 1, 2]),
+///     body: Override::each(|r| format!("kid {}", r.row)),
+///     ..Default::default()
+/// })
+/// ```
+/// A TEXT primary key gets a UUIDv7 and an INTEGER one a
 /// random positive integer; a column with a default is left to it, a CHECK
 /// (col IN (...)) column takes a listed value, a nullable column is NULL in
 /// some rows and a nullable foreign key is NULL. A required foreign key to
-/// another table gets a fresh parent per row, mocked the same way. Without the
+/// another table that the test leaves Fake gets a fresh parent per row, mocked
+/// the same way. Without the
 /// feature, calling `mock` is a compile error naming it:
 ///
 /// ```text

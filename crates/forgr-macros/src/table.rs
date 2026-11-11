@@ -52,6 +52,17 @@ pub(crate) fn rust_type(column: &Column) -> &'static str {
     }
 }
 
+/// The Rust type of the column in `Row`: a primary-key or NOT NULL column its
+/// value's type, any other column an `Option` of it.
+pub(crate) fn row_type(table: &Table, column: &Column) -> String {
+    let ty = rust_type(column);
+    if column.not_null || in_key(table, column) {
+        ty.to_owned()
+    } else {
+        format!("::core::option::Option<{ty}>")
+    }
+}
+
 /// Whether the column is part of the table's primary key.
 pub(crate) fn in_key(table: &Table, column: &Column) -> bool {
     table
@@ -81,13 +92,12 @@ pub(crate) fn emit(out: &mut String, table: &Table) {
          #[derive(Debug, Clone, PartialEq)]\npub struct Row {",
     );
     for column in &table.columns {
-        let ty = rust_type(column);
-        let name = ident(&column.name);
-        if column.not_null || in_key(table, column) {
-            let _ = write!(out, "pub {name}: {ty},");
-        } else {
-            let _ = write!(out, "pub {name}: ::core::option::Option<{ty}>,");
-        }
+        let _ = write!(
+            out,
+            "pub {}: {},",
+            ident(&column.name),
+            row_type(table, column)
+        );
     }
     out.push_str(
         "}\nimpl ::forgr::insert::FromRow for Row {\n\

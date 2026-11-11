@@ -11,9 +11,9 @@ mod table;
 
 /// `schema!("<path>/schema.json")`, the path relative to the calling crate's
 /// manifest directory: one module per table of the schema.json, each with its
-/// column markers, `Row`, `factory()` and `mock(n)`
-/// (a stand-in naming forgr's fake feature when it is off), and
-/// `empty_store()`, the empty test store. The file is read at expansion by
+/// column markers, `Row`, `factory()`, `mock(n)` and `Overrides`
+/// (a stand-in `mock` naming forgr's fake feature when it is off), a re-export
+/// of `Override` with fake, and `empty_store()`, the empty test store. The file is read at expansion by
 /// forgr-schema and tracked by the `include_str!` `empty_store()` replays, so an
 /// edit to the file alone expands the call again.
 #[proc_macro]
@@ -42,6 +42,12 @@ fn expand(input: TokenStream) -> Result<TokenStream, String> {
          ::forgr::store::empty_store(::core::include_str!(::core::concat!(::core::env!(\"CARGO_MANIFEST_DIR\"), \"/\", {path:?})))\n\
          }}"
     );
+    if cfg!(feature = "fake") {
+        out.push_str(
+            "/// What a mock writes to a column: Fake, Fixed, Pick or Each.\n\
+             pub use ::forgr::fake::Override;",
+        );
+    }
     for table in &schema.tables {
         let _ = write!(out, "pub mod {} {{", table.name);
         table::emit(&mut out, table);
