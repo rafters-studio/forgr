@@ -1,0 +1,54 @@
+CREATE TABLE events (
+  id INTEGER PRIMARY KEY,
+  ty INTEGER NOT NULL,
+  status INTEGER NOT NULL,
+  source INTEGER REFERENCES events(id),
+  body TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE TABLE notes (id TEXT PRIMARY KEY, owner TEXT NOT NULL, body TEXT, updated_at TEXT NOT NULL,
+  kind TEXT NOT NULL CHECK (kind IN ('memo', 'todo', 'log')));
+CREATE TABLE tags (owner TEXT NOT NULL, name TEXT NOT NULL, n INTEGER, PRIMARY KEY (owner, name)) WITHOUT ROWID;
+CREATE TABLE note_tags (note TEXT NOT NULL REFERENCES notes(id), owner TEXT NOT NULL, name TEXT NOT NULL,
+  PRIMARY KEY (note, owner, name), FOREIGN KEY (owner, name) REFERENCES tags(owner, name));
+CREATE TABLE big (id TEXT PRIMARY KEY, body TEXT, data BLOB);
+CREATE VIRTUAL TABLE notes_fts USING fts5(body, content='notes');
+CREATE VIEW open_todos AS SELECT id, body FROM notes WHERE kind = 'todo';
+CREATE VIEW a_open_todo_count AS SELECT count(*) AS n FROM open_todos;
+CREATE INDEX a_notes_owner ON notes(owner);
+CREATE TRIGGER a_notes_touch AFTER UPDATE ON notes BEGIN UPDATE notes SET updated_at = datetime('now') WHERE id = new.id; END;
+CREATE TABLE wide (
+  id INTEGER PRIMARY KEY,
+  c00 TEXT NOT NULL,
+  c01 TEXT NOT NULL,
+  c02 TEXT NOT NULL,
+  c03 TEXT NOT NULL,
+  c04 TEXT NOT NULL,
+  c05 TEXT NOT NULL,
+  c06 TEXT NOT NULL,
+  c07 TEXT NOT NULL,
+  c08 TEXT NOT NULL,
+  c09 TEXT NOT NULL,
+  c10 TEXT NOT NULL,
+  c11 TEXT NOT NULL,
+  c12 TEXT NOT NULL,
+  c13 TEXT NOT NULL,
+  c14 TEXT NOT NULL,
+  c15 TEXT NOT NULL,
+  c16 TEXT NOT NULL,
+  c17 TEXT NOT NULL,
+  c18 TEXT NOT NULL,
+  c19 TEXT NOT NULL,
+  c20 TEXT NOT NULL,
+  c21 TEXT NOT NULL,
+  c22 TEXT NOT NULL,
+  c23 TEXT NOT NULL,
+  c24 TEXT NOT NULL,
+  c25 TEXT NOT NULL,
+  c26 TEXT NOT NULL,
+  c27 TEXT NOT NULL,
+  c28 TEXT NOT NULL,
+  c29 TEXT NOT NULL,
+  c30 TEXT NOT NULL,
+  c31 TEXT NOT NULL
+);
