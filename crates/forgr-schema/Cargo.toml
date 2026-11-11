@@ -1,6 +1,10 @@
 [package]
 name = "forgr-schema"
+version.workspace = true
 edition.workspace = true
+description = "What an app's schema.json says: its tables, columns, keys and foreign keys, read by replaying it into in-memory SQLite."
+license.workspace = true
+repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
