@@ -1,4 +1,26 @@
-//! forgr.
+//! forgr: test data from the schema.json an app already has.
+//!
+//! A Rust library for developers and agents who test code against SQLite. One
+//! [`schema!`] call, in the crate that owns the store, reads a schema.json in
+//! migratr's format and gives every crate's tests a module per table with a
+//! factory and, behind the `fake` feature, a mock; the empty test store; and a
+//! test that prepares the app's SQL against the same file. A renamed column
+//! fails `cargo clippy --tests`; SQL the schema no longer matches fails
+//! `cargo test`.
+//!
+//! The README has the rest, with output pasted from runs:
+//!
+//! - [Setup](https://github.com/rafters-studio/forgr#setup): the owning crate,
+//!   the feature, and the crates that test through it.
+//! - [The empty test store](https://github.com/rafters-studio/forgr#the-empty-test-store)
+//! - [A factory](https://github.com/rafters-studio/forgr#a-factory)
+//! - [A mock](https://github.com/rafters-studio/forgr#a-mock)
+//! - [Overrides](https://github.com/rafters-studio/forgr#overrides)
+//! - [A child attached to a parent](https://github.com/rafters-studio/forgr#a-child-attached-to-a-parent)
+//! - [When the schema moves](https://github.com/rafters-studio/forgr#when-the-schema-moves):
+//!   the compile error, the clippy error and the SQL check report.
+//! - [What the SQL check does not see](https://github.com/rafters-studio/forgr#what-the-sql-check-does-not-see)
+//! - [Limits in 0.1](https://github.com/rafters-studio/forgr#limits-in-01)
 
 /// `schema!("<path>/schema.json")`, the path relative to the calling crate's
 /// manifest directory, gives one module per table of that schema.json and
