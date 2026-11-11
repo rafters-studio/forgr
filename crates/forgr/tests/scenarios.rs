@@ -36,6 +36,8 @@ struct Called {
     kind: Slot<edge::kinds::Row>,
     event: Slot<macro_toy::events::Row>,
     build: Slot<std::process::Output>,
+    notes: Slot<Vec<macro_toy::notes::Row>>,
+    events: Slot<Vec<macro_toy::events::Row>>,
 }
 
 #[fixture]
@@ -575,6 +577,189 @@ fn object_returned(called: &Called) -> Result<(), String> {
         Err(format!(
             "insert returned {object:?}; the store holds {stored:?}"
         ))
+    }
+}
+
+#[given("the empty test store for the macro toy's schema.json fixture")]
+fn macro_store(called: &Called) {
+    called.store.set(macro_toy::empty_store());
+}
+
+/// The macro toy's empty test store, once `sql` over it returns `want`.
+fn macro_store_where(called: &Called, sql: &str, want: &str) -> Result<(), String> {
+    let store = macro_toy::empty_store();
+    let got: String = store
+        .query_row(sql, [], |r| r.get(0))
+        .map_err(|err| format!("{sql}: {err}"))?;
+    if got != want {
+        return Err(format!("{sql} gives {got}, not {want}"));
+    }
+    called.store.set(store);
+    Ok(())
+}
+
+#[given(
+    "the empty test store for the macro toy's schema.json fixture, where the primary key of notes is TEXT"
+)]
+fn notes_text_key(called: &Called) -> Result<(), String> {
+    macro_store_where(
+        called,
+        "SELECT group_concat(name || ' ' || type) FROM pragma_table_info('notes') WHERE pk > 0",
+        "id TEXT",
+    )
+}
+
+#[given(
+    "the empty test store for the macro toy's schema.json fixture, where the primary key of events is INTEGER"
+)]
+fn events_integer_key(called: &Called) -> Result<(), String> {
+    macro_store_where(
+        called,
+        "SELECT group_concat(name || ' ' || type) FROM pragma_table_info('events') WHERE pk > 0",
+        "id INTEGER",
+    )
+}
+
+#[given(
+    "the empty test store for the macro toy's schema.json fixture, where notes.body is nullable and not a foreign key"
+)]
+fn notes_nullable_body(called: &Called) -> Result<(), String> {
+    macro_store_where(
+        called,
+        "SELECT (SELECT \"notnull\" FROM pragma_table_info('notes') WHERE name = 'body') || ' ' || \
+         (SELECT count(*) FROM pragma_foreign_key_list('notes') WHERE \"from\" = 'body')",
+        "0 0",
+    )
+}
+
+#[given(
+    "the empty test store for the macro toy's schema.json fixture, where events.source is a nullable foreign key"
+)]
+fn events_nullable_source(called: &Called) -> Result<(), String> {
+    macro_store_where(
+        called,
+        "SELECT (SELECT \"notnull\" FROM pragma_table_info('events') WHERE name = 'source') || ' ' || \
+         (SELECT \"table\" FROM pragma_foreign_key_list('events') WHERE \"from\" = 'source')",
+        "0 events",
+    )
+}
+
+/// Inserts `notes::mock(n)` into the scenario's store.
+fn mock_notes(called: &Called, n: usize) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    let rows = macro_toy::notes::mock(n)
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.notes.set(rows);
+    called.store.set(store);
+    Ok(())
+}
+
+#[when("the test inserts notes::mock(0)")]
+fn mock_no_notes(called: &Called) -> Result<(), String> {
+    mock_notes(called, 0)
+}
+
+#[when("the test inserts notes::mock(8)")]
+fn mock_eight_notes(called: &Called) -> Result<(), String> {
+    mock_notes(called, 8)
+}
+
+#[when("the test inserts notes::mock(50)")]
+fn mock_fifty_notes(called: &Called) -> Result<(), String> {
+    mock_notes(called, 50)
+}
+
+#[when("the test inserts events::mock(8)")]
+fn mock_eight_events(called: &Called) -> Result<(), String> {
+    let store = called.store.take().ok_or("no store was taken")?;
+    let rows = macro_toy::events::mock(8)
+        .insert(&store)
+        .map_err(|err| err.to_string())?;
+    called.events.set(rows);
+    called.store.set(store);
+    Ok(())
+}
+
+#[when("the test inserts events::mock(8) with no override for source")]
+fn mock_events_without_source(called: &Called) -> Result<(), String> {
+    mock_eight_events(called)
+}
+
+#[then("insert returns no rows")]
+fn returns_no_rows(called: &Called) -> Result<(), String> {
+    let rows = called.notes.take().ok_or("no mock was inserted")?;
+    let store = called.store.take().ok_or("no store was taken")?;
+    let held: i64 = store
+        .query_row("SELECT count(*) FROM notes", [], |r| r.get(0))
+        .map_err(|err| err.to_string())?;
+    if rows.is_empty() && held == 0 {
+        Ok(())
+    } else {
+        Err(format!("insert returned {rows:?}; the store holds {held}"))
+    }
+}
+
+/// Whether `id` is a UUIDv7: 8-4-4-4-12 lowercase hex, version 7, variant 10.
+fn is_uuid7(id: &str) -> bool {
+    let parts: Vec<&str> = id.split('-').collect();
+    parts.iter().map(|p| p.len()).eq([8, 4, 4, 4, 12])
+        && parts.iter().all(|p| {
+            p.bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        })
+        && parts[2].starts_with('7')
+        && parts[3].starts_with(['8', '9', 'a', 'b'])
+}
+
+#[then("every notes row's id is a UUIDv7")]
+fn notes_ids_are_uuid7(called: &Called) -> Result<(), String> {
+    let rows = called.notes.take().ok_or("no mock was inserted")?;
+    let bad: Vec<&str> = rows
+        .iter()
+        .map(|r| r.id.as_str())
+        .filter(|id| !is_uuid7(id))
+        .collect();
+    if rows.len() == 8 && bad.is_empty() {
+        Ok(())
+    } else {
+        Err(format!("{} rows; not UUIDv7: {bad:?}", rows.len()))
+    }
+}
+
+#[then("every events row's id is a positive integer")]
+fn events_ids_are_positive(called: &Called) -> Result<(), String> {
+    let rows = called.events.take().ok_or("no mock was inserted")?;
+    let ids: Vec<i64> = rows.iter().map(|r| r.id).collect();
+    if ids.len() == 8 && ids.iter().all(|&id| id > 0) {
+        Ok(())
+    } else {
+        Err(format!("the events ids are {ids:?}"))
+    }
+}
+
+#[then("some notes rows have body null")]
+fn some_bodies_null(called: &Called) -> Result<(), String> {
+    let rows = called.notes.take().ok_or("no mock was inserted")?;
+    let nulls = rows.iter().filter(|r| r.body.is_none()).count();
+    if rows.len() == 50 && nulls > 0 {
+        Ok(())
+    } else {
+        Err(format!(
+            "{nulls} of {} notes rows have body null",
+            rows.len()
+        ))
+    }
+}
+
+#[then("every events row's source is NULL")]
+fn sources_null(called: &Called) -> Result<(), String> {
+    let rows = called.events.take().ok_or("no mock was inserted")?;
+    let sources: Vec<Option<i64>> = rows.iter().map(|r| r.source).collect();
+    if sources.len() == 8 && sources.iter().all(Option::is_none) {
+        Ok(())
+    } else {
+        Err(format!("the events sources are {sources:?}"))
     }
 }
 

@@ -12,6 +12,21 @@ pub use rusqlite::{Result, Row as SqlRow};
 /// that, the column's state is its marker type, `<table>::col::<column>`.
 pub struct Set;
 
+/// What a table's stand-in `mock` needs and nothing has: `schema!` emits the
+/// stand-in when forgr is built without its `fake` feature, so calling it names
+/// the feature.
+#[diagnostic::on_unimplemented(
+    message = "mocks need forgr's `fake` feature",
+    label = "this mock needs forgr's `fake` feature",
+    note = "add features = [\"fake\"] to forgr in [dev-dependencies]"
+)]
+pub trait MocksNeedFake {
+    /// What the mock would be.
+    type Mock;
+    /// The mock.
+    fn mock(self) -> Self::Mock;
+}
+
 /// A table's row, read back from a row SQLite returned.
 pub trait FromRow: Sized {
     /// Reads the row, its columns in declaration order.

@@ -6,11 +6,13 @@ use proc_macro::{TokenStream, TokenTree};
 
 mod factory;
 mod ident;
+mod mock;
 mod table;
 
 /// `schema!("<path>/schema.json")`, the path relative to the calling crate's
 /// manifest directory: one module per table of the schema.json, each with its
-/// column markers, `Row` and `factory()`, and
+/// column markers, `Row`, `factory()` and `mock(n)`
+/// (a stand-in naming forgr's fake feature when it is off), and
 /// `empty_store()`, the empty test store. The file is read at expansion by
 /// forgr-schema and tracked by the `include_str!` `empty_store()` replays, so an
 /// edit to the file alone expands the call again.
@@ -44,6 +46,7 @@ fn expand(input: TokenStream) -> Result<TokenStream, String> {
         let _ = write!(out, "pub mod {} {{", table.name);
         table::emit(&mut out, table);
         factory::emit(&mut out, table);
+        mock::emit(&mut out, table);
         out.push('}');
     }
     out.parse()

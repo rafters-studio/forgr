@@ -1,5 +1,5 @@
 # Generated from the legion requirement. Do not hand-edit this file.
-Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORGR-002, FR-FORGR-004)
+Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORGR-002, FR-FORGR-004, FR-FORGR-006)
 
   @criterion-01a1c93d-7ee8-7711-a173-c91cfe78b52b
   Scenario: forgr leaves schema.json as it found it
@@ -42,3 +42,9 @@ Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORG
     Given the empty test store for the macro toy's schema.json fixture, where events.status is INTEGER and events.body is TEXT
     When the test inserts an events factory with id 1, ty 3, status 0 and body root
     Then the test compiles and the inserted row carries status 0 and body root
+
+  @criterion-01a1c950-1faa-7a53-a1ae-33e87e8f40fe
+  Scenario: a nullable foreign key left Fake is NULL
+    Given the empty test store for the macro toy's schema.json fixture, where events.source is a nullable foreign key
+    When the test inserts events::mock(8) with no override for source
+    Then every events row's source is NULL

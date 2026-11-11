@@ -7,8 +7,15 @@ rust-version.workspace = true
 forgr-macros = { path = "../forgr-macros" }
 forgr-schema = { path = "../forgr-schema" }
 rusqlite = { workspace = true }
+fake = { workspace = true, optional = true }
+
+[features]
+# Mocks: the generator, and schema! emitting each table's mock.
+fake = ["dep:fake", "forgr-macros/fake"]
 
 [dev-dependencies]
+# forgr's own scenarios are built with fake.
+forgr = { path = ".", features = ["fake"] }
 rstest = { workspace = true }
 rstest-bdd = { workspace = true }
 rstest-bdd-macros = { workspace = true }
