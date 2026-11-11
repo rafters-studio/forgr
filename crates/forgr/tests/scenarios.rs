@@ -55,10 +55,20 @@ fn unchanged(called: &Called) -> Result<(), String> {
     let built = called.built.take().ok_or("no schema.json was built")?;
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(MACRO_TOY);
     let now = std::fs::read_to_string(&path).map_err(|err| format!("{MACRO_TOY}: {err}"))?;
-    if now == built {
+    if now != built {
+        return Err(format!("{MACRO_TOY} changed after the tests were built"));
+    }
+    // A write during the build would be in what the build saw, so also hold
+    // the file to the committed bytes.
+    let diff = std::process::Command::new("git")
+        .args(["diff", "--quiet", "--exit-code", "--", MACRO_TOY])
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .status()
+        .map_err(|err| format!("could not run git to compare {MACRO_TOY}: {err}"))?;
+    if diff.success() {
         Ok(())
     } else {
-        Err(format!("{MACRO_TOY} changed after the tests were built"))
+        Err(format!("{MACRO_TOY} differs from the committed file"))
     }
 }
 
