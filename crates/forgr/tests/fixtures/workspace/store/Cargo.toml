@@ -1,0 +1,17 @@
+# Adapted from the workspace toy's store/Cargo.toml (RESEARCH
+# 01a1c94b-8c34-7363-bafb-c60062cf77b1 body.inputs) for forgr #10. What changed and why:
+# - the path dependency on forgr-toy is on the built forgr (crates/forgr), named
+#   forgr, because the code schema! generates names ::forgr:: paths; the
+#   testing feature turns on forgr and its fake feature as it turned on forgr-toy's.
+[package]
+name = "store"
+version = "0.0.0"
+edition = "2024"
+publish = false
+[features]
+testing = ["dep:forgr", "forgr/fake"]
+[dependencies]
+rusqlite = { version = "0.41", features = ["bundled"] }
+forgr = { path = "../../../..", optional = true }
+[dev-dependencies]
+forgr = { path = "../../../..", features = ["fake"] }

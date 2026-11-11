@@ -8,6 +8,12 @@ forgr-macros = { path = "../forgr-macros" }
 forgr-schema = { path = "../forgr-schema" }
 rusqlite = { workspace = true }
 fake = { workspace = true, optional = true }
+# The SQL check: reads the workspace's source at test time.
+syn = { workspace = true }
+# Line numbers of what syn reads, outside a proc macro.
+proc-macro2 = { workspace = true }
+# The members `cargo metadata` lists.
+serde_json = { workspace = true }
 
 [features]
 # Mocks: the generator, and schema! emitting each table's mock.

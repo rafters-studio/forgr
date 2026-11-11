@@ -1,0 +1,80 @@
+{
+  "version": null,
+  "objects": [
+    {
+      "type": "index",
+      "name": "a_notes_owner",
+      "sql": "CREATE INDEX a_notes_owner ON notes(owner)"
+    },
+    {
+      "type": "table",
+      "name": "big",
+      "sql": "CREATE TABLE big (id TEXT PRIMARY KEY, body TEXT, data BLOB)"
+    },
+    {
+      "type": "table",
+      "name": "events",
+      "sql": "CREATE TABLE events (\n  id INTEGER PRIMARY KEY,\n  ty INTEGER NOT NULL,\n  status INTEGER NOT NULL,\n  source INTEGER REFERENCES events(id),\n  body TEXT NOT NULL,\n  created_at TEXT NOT NULL DEFAULT (datetime('now'))\n)"
+    },
+    {
+      "type": "table",
+      "name": "note_tags",
+      "sql": "CREATE TABLE note_tags (note TEXT NOT NULL REFERENCES notes(id), owner TEXT NOT NULL, name TEXT NOT NULL,\n  PRIMARY KEY (note, owner, name), FOREIGN KEY (owner, name) REFERENCES tags(owner, name))"
+    },
+    {
+      "type": "table",
+      "name": "notes",
+      "sql": "CREATE TABLE notes (id TEXT PRIMARY KEY, owner TEXT NOT NULL, body TEXT, updated_at TEXT NOT NULL,\n  kind TEXT NOT NULL CHECK (kind IN ('memo', 'todo', 'log')))"
+    },
+    {
+      "type": "table",
+      "name": "notes_fts",
+      "sql": "CREATE VIRTUAL TABLE notes_fts USING fts5(body, content='notes')"
+    },
+    {
+      "type": "table",
+      "name": "notes_fts_config",
+      "sql": "CREATE TABLE 'notes_fts_config'(k PRIMARY KEY, v) WITHOUT ROWID"
+    },
+    {
+      "type": "table",
+      "name": "notes_fts_data",
+      "sql": "CREATE TABLE 'notes_fts_data'(id INTEGER PRIMARY KEY, block BLOB)"
+    },
+    {
+      "type": "table",
+      "name": "notes_fts_docsize",
+      "sql": "CREATE TABLE 'notes_fts_docsize'(id INTEGER PRIMARY KEY, sz BLOB)"
+    },
+    {
+      "type": "table",
+      "name": "notes_fts_idx",
+      "sql": "CREATE TABLE 'notes_fts_idx'(segid, term, pgno, PRIMARY KEY(segid, term)) WITHOUT ROWID"
+    },
+    {
+      "type": "table",
+      "name": "tags",
+      "sql": "CREATE TABLE tags (owner TEXT NOT NULL, name TEXT NOT NULL, n INTEGER, PRIMARY KEY (owner, name)) WITHOUT ROWID"
+    },
+    {
+      "type": "table",
+      "name": "wide",
+      "sql": "CREATE TABLE wide (\n  id INTEGER PRIMARY KEY,\n  c00 TEXT NOT NULL,\n  c01 TEXT NOT NULL,\n  c02 TEXT NOT NULL,\n  c03 TEXT NOT NULL,\n  c04 TEXT NOT NULL,\n  c05 TEXT NOT NULL,\n  c06 TEXT NOT NULL,\n  c07 TEXT NOT NULL,\n  c08 TEXT NOT NULL,\n  c09 TEXT NOT NULL,\n  c10 TEXT NOT NULL,\n  c11 TEXT NOT NULL,\n  c12 TEXT NOT NULL,\n  c13 TEXT NOT NULL,\n  c14 TEXT NOT NULL,\n  c15 TEXT NOT NULL,\n  c16 TEXT NOT NULL,\n  c17 TEXT NOT NULL,\n  c18 TEXT NOT NULL,\n  c19 TEXT NOT NULL,\n  c20 TEXT NOT NULL,\n  c21 TEXT NOT NULL,\n  c22 TEXT NOT NULL,\n  c23 TEXT NOT NULL,\n  c24 TEXT NOT NULL,\n  c25 TEXT NOT NULL,\n  c26 TEXT NOT NULL,\n  c27 TEXT NOT NULL,\n  c28 TEXT NOT NULL,\n  c29 TEXT NOT NULL,\n  c30 TEXT NOT NULL,\n  c31 TEXT NOT NULL\n)"
+    },
+    {
+      "type": "trigger",
+      "name": "a_notes_touch",
+      "sql": "CREATE TRIGGER a_notes_touch AFTER UPDATE ON notes BEGIN UPDATE notes SET updated_at = datetime('now') WHERE id = new.id; END"
+    },
+    {
+      "type": "view",
+      "name": "a_open_todo_count",
+      "sql": "CREATE VIEW a_open_todo_count AS SELECT count(*) AS n FROM open_todos"
+    },
+    {
+      "type": "view",
+      "name": "open_todos",
+      "sql": "CREATE VIEW open_todos AS SELECT id, body FROM notes WHERE kind = 'todo'"
+    }
+  ]
+}

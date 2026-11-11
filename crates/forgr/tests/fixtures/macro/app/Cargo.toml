@@ -1,0 +1,17 @@
+# The macro toy's app (RESEARCH 01a1c917-ba6c-7553-bffe-c648a5f16f44), written
+# for forgr #10: the toy's body.inputs hold its src/lib.rs and src/sql/report.sql
+# but not this file. rusqlite is what src/lib.rs uses; forgr is the built forgr
+# (crates/forgr), a dev-dependency for tests/check.rs.
+[package]
+name = "app"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+rusqlite = { version = "0.41", features = ["bundled"] }
+
+[dev-dependencies]
+forgr = { path = "../../../.." }

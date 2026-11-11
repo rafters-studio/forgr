@@ -1,0 +1,7 @@
+# The workspace toy's root manifest (RESEARCH 01a1c94b-8c34-7363-bafb-c60062cf77b1),
+# written for forgr #10: the toy's body.inputs hold its members but not this file.
+# W4 reads the members from it: the one check, run by store's cargo test, scans
+# the non-test src of both.
+[workspace]
+resolver = "3"
+members = ["store", "app"]
