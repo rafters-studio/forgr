@@ -1,5 +1,5 @@
 # Generated from the legion requirement. Do not hand-edit this file.
-Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORGR-002, FR-FORGR-004, FR-FORGR-006)
+Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORGR-002, FR-FORGR-004, FR-FORGR-006, FR-FORGR-008, FR-FORGR-009)
 
   @criterion-01a1c93d-7ee8-7711-a173-c91cfe78b52b
   Scenario: forgr leaves schema.json as it found it
@@ -66,3 +66,21 @@ Feature: schema!, called as a user calls it through forgr (FR-FORGR-001, FR-FORG
     Given the empty test store for the edge schema.json fixture, holding one nodes row inserted by a factory whose parent_id is its own id
     When the test inserts nodes::mock(8) with parent_id Fixed to that row's id
     Then every new nodes row's parent_id is that row's id
+
+  @criterion-01a1c93d-9845-7a72-8e5d-bbcfea70927f
+  Scenario: an events table has a factory
+    Given the empty test store for the macro toy's schema.json fixture
+    When the test inserts an events factory with id 1, ty 3, status 0 and body root
+    Then the store holds that events row
+
+  @criterion-01a1c93d-98c8-7142-85fe-29dd70a3aa23
+  Scenario: an FTS5 table has no factory
+    Given the macro toy's schema.json fixture, which holds the FTS5 table notes_fts
+    When a test calls notes_fts::factory()
+    Then the test fails to compile
+
+  @criterion-01a1c93d-98c8-7142-85fe-29e4537183d6
+  Scenario: an FTS5 table has no mock
+    Given the macro toy's schema.json fixture, which holds the FTS5 table notes_fts, and forgr's fake feature on
+    When a test calls notes_fts::mock(8)
+    Then the test fails to compile
