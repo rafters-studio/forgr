@@ -28,7 +28,9 @@ pub enum Error {
         name: String,
         source: rusqlite::Error,
     },
-    /// A replayed table could not be read back.
+    /// A replayed table could not be read back, or SQLite's own table list
+    /// (`pragma_table_list`, which says which tables are shadow tables) could
+    /// not be read.
     Read {
         table: String,
         source: rusqlite::Error,
@@ -97,7 +99,9 @@ impl Schema {
 ///
 /// # Errors
 ///
-/// When the text is not in migratr's format, or an object's SQL does not replay.
+/// When the text is not in migratr's format, no in-memory SQLite opens, an
+/// object's SQL does not replay, or SQLite cannot report which tables are
+/// shadow tables.
 pub fn replay(text: &str) -> Result<rusqlite::Connection, Error> {
     let file = file::parse(text).map_err(Error::Parse)?;
     Ok(replay::replay(&file.objects)?.conn)
