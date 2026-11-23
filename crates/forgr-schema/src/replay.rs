@@ -1,5 +1,6 @@
 //! Replay of schema.json into in-memory SQLite: tables first, each virtual table
-//! created from its own entry and the entries of its shadow tables skipped.
+//! created from its own entry and the entries of the shadow tables SQLite made
+//! for it skipped.
 
 use rusqlite::Connection;
 
@@ -22,37 +23,48 @@ fn is_virtual(object: &Object) -> bool {
             .is_some_and(|head| head.eq_ignore_ascii_case("CREATE VIRTUAL TABLE"))
 }
 
-/// Replays `objects` into a fresh in-memory SQLite: every table before every
-/// other object, otherwise in file order. A table named `<virtual table>_*` is a
-/// shadow table SQLite recreates with its virtual table, so its entry is skipped.
+/// The tables SQLite created as shadow tables of the virtual tables replayed so
+/// far: `PRAGMA table_list` reports them as type `shadow`. Which tables a virtual
+/// table owns differs by module, so SQLite is asked rather than the names guessed.
+fn shadow_tables(conn: &Connection) -> rusqlite::Result<Vec<String>> {
+    let mut stmt = conn.prepare("SELECT name FROM pragma_table_list WHERE type = 'shadow'")?;
+    stmt.query_map([], |r| r.get(0))?.collect()
+}
+
+/// Replays `objects` into a fresh in-memory SQLite: every virtual table first,
+/// then every other table, then every other object, each group in file order. A
+/// table SQLite created as a virtual table's shadow table is recreated with it,
+/// so its own entry is skipped; any other table is replayed, whatever its name.
 pub(crate) fn replay(objects: &[Object]) -> Result<Replay<'_>, Error> {
-    let virtuals: Vec<&str> = objects
-        .iter()
-        .filter(|o| is_virtual(o))
-        .map(|o| o.name.as_str())
-        .collect();
-    let is_shadow = |o: &Object| {
-        o.kind == "table"
-            && virtuals.iter().any(|v| {
-                o.name
-                    .strip_prefix(v)
-                    .is_some_and(|rest| rest.starts_with('_'))
-            })
-    };
-
-    let mut ordered: Vec<&Object> = objects.iter().filter(|o| !is_shadow(o)).collect();
-    // A stable sort: views keep their name order, which SQLite resolves lazily.
-    ordered.sort_by_key(|o| o.kind != "table");
-
     let conn = Connection::open_in_memory().map_err(Error::Open)?;
-    for object in ordered {
+    let run = |object: &Object| {
         conn.execute_batch(&object.sql)
             .map_err(|source| Error::Replay {
                 kind: object.kind.clone(),
                 name: object.name.clone(),
                 source,
-            })?;
+            })
+    };
+
+    for object in objects.iter().filter(|o| is_virtual(o)) {
+        run(object)?;
     }
+    let shadows = shadow_tables(&conn).map_err(|source| Error::Read {
+        table: "pragma_table_list".to_owned(),
+        source,
+    })?;
+    let is_shadow = |o: &Object| o.kind == "table" && shadows.contains(&o.name);
+
+    let mut ordered: Vec<&Object> = objects
+        .iter()
+        .filter(|o| !is_virtual(o) && !is_shadow(o))
+        .collect();
+    // A stable sort: views keep their name order, which SQLite resolves lazily.
+    ordered.sort_by_key(|o| o.kind != "table");
+    for object in ordered {
+        run(object)?;
+    }
+
     let tables = objects
         .iter()
         .filter(|o| o.kind == "table" && !is_virtual(o) && !is_shadow(o))
@@ -204,5 +216,72 @@ mod tests {
                 .iter()
                 .any(|t| t.name.starts_with("notes_fts"))
         );
+    }
+
+    /// The objects of a store built from `ddl`, as schema.json lists them: every
+    /// `sqlite_master` row with SQL, shadow tables included, in name order.
+    fn objects_of(ddl: &str) -> Vec<Object> {
+        let c = Connection::open_in_memory().unwrap();
+        c.execute_batch(ddl).unwrap();
+        c.prepare("SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name")
+            .unwrap()
+            .query_map([], |r| {
+                Ok(Object {
+                    kind: r.get(0)?,
+                    name: r.get(1)?,
+                    sql: r.get(2)?,
+                })
+            })
+            .unwrap()
+            .map(Result::unwrap)
+            .collect()
+    }
+
+    /// rannoch #67's shape: an FTS5 table `_search`, an ordinary `_search_map`
+    /// beside it, and an R*Tree `r`.
+    const SEARCH: &str = "
+        CREATE VIRTUAL TABLE _search USING fts5(body);
+        CREATE TABLE _search_map (rid INTEGER PRIMARY KEY, node TEXT NOT NULL) WITHOUT ROWID;
+        CREATE VIRTUAL TABLE r USING rtree(id, x0, x1);
+    ";
+
+    /// forgr#31: a table named `<virtual table>_<suffix>` that SQLite did not
+    /// create as a shadow table is replayed, and SQL naming it prepares.
+    #[test]
+    fn an_ordinary_table_with_a_virtual_tables_prefix_is_replayed() {
+        let objects = objects_of(SEARCH);
+        assert!(objects.iter().any(|o| o.name == "_search_config"));
+        assert!(objects.iter().any(|o| o.name == "r_node"));
+        let replay = replay(&objects).unwrap();
+        replay
+            .conn
+            .prepare("SELECT DISTINCT m.node FROM _search s JOIN _search_map m ON m.rid = s.rowid WHERE _search MATCH ?1")
+            .unwrap();
+        let names: Vec<&str> = replay.tables.iter().map(|t| t.name.as_str()).collect();
+        assert_eq!(names, ["_search_map"]);
+    }
+
+    /// forgr#31: an R*Tree's `_node`, `_parent` and `_rowid` tables and the
+    /// FTS5 shadow tables are still skipped and recreated by SQLite.
+    #[test]
+    fn rtree_and_fts5_shadow_tables_are_still_skipped() {
+        let objects = objects_of(SEARCH);
+        let replay = replay(&objects).unwrap();
+        let mut shadows = shadow_tables(&replay.conn).unwrap();
+        shadows.sort();
+        assert_eq!(
+            shadows,
+            [
+                "_search_config",
+                "_search_content",
+                "_search_data",
+                "_search_docsize",
+                "_search_idx",
+                "r_node",
+                "r_parent",
+                "r_rowid",
+            ]
+        );
+        assert!(replay.tables.iter().all(|t| !shadows.contains(&t.name)));
     }
 }
