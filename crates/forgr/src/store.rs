@@ -23,3 +23,50 @@ pub fn empty_store(schema_json: &str) -> Connection {
     }
     conn
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// forgr#31: the empty store from a schema.json with an FTS5 `_search`, its
+    /// shadow tables and an ordinary `_search_map` holds `_search_map`.
+    #[test]
+    fn the_empty_store_holds_a_table_named_after_a_virtual_table() {
+        let source = Connection::open_in_memory().unwrap();
+        source
+            .execute_batch(
+                "CREATE VIRTUAL TABLE _search USING fts5(body);
+                 CREATE TABLE _search_map (rid INTEGER PRIMARY KEY, node TEXT NOT NULL) WITHOUT ROWID;",
+            )
+            .unwrap();
+        let objects: Vec<serde_json::Value> = source
+            .prepare(
+                "SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL ORDER BY name",
+            )
+            .unwrap()
+            .query_map([], |r| {
+                Ok(serde_json::json!({
+                    "type": r.get::<_, String>(0)?,
+                    "name": r.get::<_, String>(1)?,
+                    "sql": r.get::<_, String>(2)?,
+                }))
+            })
+            .unwrap()
+            .map(Result::unwrap)
+            .collect();
+        let schema_json = serde_json::json!({ "version": null, "objects": objects }).to_string();
+
+        let store = empty_store(&schema_json);
+        let kind: String = store
+            .query_row(
+                "SELECT type FROM pragma_table_list WHERE name = '_search_map'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(kind, "table");
+        store
+            .execute("INSERT INTO _search_map (rid, node) VALUES (1, 'n')", [])
+            .unwrap();
+    }
+}
